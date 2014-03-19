@@ -1,0 +1,27 @@
+#lockresize
+#small
+<? SET bottom_height = 32 ?>
+
+#font(YF,WF,WF)
+#box[%BOTTOM](x:0,w:100%,y:100%-<? bottom_height ?>,h:<? bottom_height ?>)
+#pan(%BOTTOM[x:0-1,w:100%+2,y:0-1,h:100%+2],1)
+#btn(%BOTTOM[x:5,y:4,w:100,h:28],{GW|open&new_room_dgl.dcml&ASTATE=<%ASTATE>|LW_lockall},"New")
+#btn(%BOTTOM[x:120,y:4,w:100,h:28],{GW|open&join_game.dcml&ASTATE=<%ASTATE>^VE_RID=<%RL_ID>},"Join")
+#font(SYF,SWF,SWF)
+#txt(%BOTTOM[x:240,w:100%,y:7,h:24],{},"last start at <? server.data.start_at ?>")
+#font(YF,WF,WF)
+#rtxt(%BOTTOM[x1:100%-10,x:300,y:4,h:24],{},"www.newlcn.com")
+
+#box[%LBX](x:0,y:0,w:100%,h:100%-<? bottom_height ?>)
+
+#DBTBL[%RMLST](%LBX[x:1,y:1,w:100%,h:100%],{ROOMS_V<? h.req.ver ?>}{%RL_C},"<? server.config.table_timeout ?>",TBL_SF,7,0,
+0,"RID",NON,NON,NON,%RL_ID,
+53,"Game Title",STR,STR,STR,%RL_TITLE,
+15,"Host",STR,STR,STR,%RL_HOST,
+12,"Level",STR,FIXED:Any|Hard|Normal|Easy,STR,%RL_LEVL,
+10,"Players",STR,INT:Any|>1|>2|>3|>4|>5|>6,STR,%RL_PLRS,
+0,"V",NON,NON,NON,%RL_VERS,
+10,"Ping",PING,PING:Any|<100|<200|<300|<400|<500|<600,PING,%RL_IPADR)
+
+<NGDLG>
+<NGDLG>

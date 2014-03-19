@@ -1,0 +1,21 @@
+#ebox[%BOX](x:100,y:140,w:350,h:100)
+#pan[%MPN](%BOX[x:0,y:0,w:100%,h:100%],8)
+
+#font(WF,WF,WF)
+#ctxt[%TIT](%BOX[x:0,y:6,w:100%,h:30],{},"newlcn.com game server")
+
+#font(WF,WF,WF)
+#txt(%BOX[x:10,y:52,w:100%,h:24],{},"Your nick:")
+#font(YF,YF,WF)
+//#exec(LW_cfile&\00&Cookies/%GV_VE_NICK)
+#pan[%P_NICK](%BOX[x:100,x1:100%-10,y:50,h:24],4)
+#edit(%BOX[x:100,x1:100%-10,y:48,h:24],{%GV_LCN_NICK})
+
+//#font(WF,WF,WF)
+//#chk(%BOX[x:10,x1:100%,y:%P_NICK+10,h:10],{},"remember",1,0,0)
+
+
+#font(YF,WF,RF)
+
+#sbtn[%B_RGST](%BOX[x:0,y:100%+8,w:160,h:24],{GW|open&try_enter.dcml&NICK=<%GV_LCN_NICK>|LW_lockall},"Enter")
+#sbtn[%B_RGST](%BOX[x:185,y:100%+8,w:160,h:24],{LW_key&#CANCEL|LW_lockall},"Cancel")
