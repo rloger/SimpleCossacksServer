@@ -15,13 +15,13 @@ sub public {
 }
 
 sub enter {
-  my($self, $h, $url, $params) = @_;
+  my($self, $h, $url, $p) = @_;
   $h->show('enter.cml');
 }
 
 sub try_enter {
-  my($self, $h, $params) = @_;
-  my $nick = $params->{NICK};
+  my($self, $h, $p) = @_;
+  my $nick = $p->{NICK};
   if(!defined($nick) || $nick eq '') {
     $h->show('error_enter.cml', { error_text => 'Enter nick' });
   } elsif($nick !~ /^[\[\]_\w-]+$/) {
@@ -41,12 +41,12 @@ sub try_enter {
     }
     $h->connection->data->{nick} = $nick;
     $h->log->info($h->connection->log_message . " " . $h->req->ver . " #enter");
-    $h->show('ok_enter.cml', { P => $params, id => $id});
+    $h->show('ok_enter.cml', { P => $p, id => $id});
   }
 }
 
 sub startup {
-  my($self, $h, $params) = @_;
+  my($self, $h, $p) = @_;
   $h->show('startup.cml');
 }
 
