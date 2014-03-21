@@ -15,7 +15,7 @@ sub open : Command {
   my %P;
   if($params) {
     $params =~ s/\0//;
-    %P = ( $params =~ m{([^^]+)=([^^]*)}g );
+    %P = ( $params =~ m{\G(\w+)=(.*?)(?:\^(?=\w+=)|$)}gs );
   }
   my $method = ( $url =~ s/\.dcml//r );
   if(SimpleCossacksServer::CommandController::Open->public($method)) {
