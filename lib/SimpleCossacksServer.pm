@@ -111,7 +111,12 @@ sub leave_room {
     delete $self->data->{rooms_by_ctlsum}{ $room->{ctlsum} };
     delete $self->data->{rooms_by_id}{ $room->{id} };
     my $rooms_list = $self->data->{dbtbl}{ "ROOMS_V" . $room->{ver} };
-    splice @$rooms_list, $room->{number}, 1;
+    for(my $i = 0; $i < @$rooms_list; $i++) {
+        if($rooms_list->[$i]{id} == $room->{id}) {
+            splice @$rooms_list, $i, 1;
+            last;
+        } 
+    }
   }
   return $room;
 }
@@ -125,7 +130,12 @@ sub start_room {
     delete $self->data->{rooms_by_id}{ $room->{id} };
     $room->{started} = 1;
     my $rooms_list = $self->data->{dbtbl}{ "ROOMS_V" . $room->{ver} };
-    splice @$rooms_list, $room->{number}, 1;
+    for(my $i = 0; $i < @$rooms_list; $i++) {
+        if($rooms_list->[$i]{id} == $room->{id}) {
+            splice @$rooms_list, $i, 1;
+            last;
+        } 
+    }
   }
   return $room;
 }

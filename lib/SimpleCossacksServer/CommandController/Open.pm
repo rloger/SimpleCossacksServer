@@ -99,7 +99,6 @@ sub reg_new_room {
       passwd         => $p->{VE_PASSWD},
       ver            => $h->req->ver,
       ctlsum         => $ctlsum,
-      number         => scalar(@$rooms),
     };
     push @$rooms, $room;
     $h->server->data->{rooms_by_ctlsum}->{ $room->{ctlsum} }  = $room;
