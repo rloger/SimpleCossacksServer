@@ -13,6 +13,9 @@ has template_engine => (is => 'rw');
 has config_file => (is => 'ro');
 has connection_controller => (is => 'ro', default => sub { SimpleCossacksServer::ConnectionController->new() });
 has log_level => (is => 'rw');
+has config => (is => 'rw', builder => '_build_config');
+has host => (is => 'ro', default => sub { shift->config->{host} // 'localhost' });
+has port => (is => 'ro', default => sub { shift->config->{port} // 34001 });
 
 sub command_controller { 'SimpleCossacksServer::CommandController' }
 sub handler_class { 'SimpleCossacksServer::Handler' }
@@ -65,7 +68,7 @@ sub start {
   $self->SUPER::start(@_);
 }
 
-sub _create_config {
+sub _build_config {
   my($self) = @_;
   my $config = {};
   my $cfg = Config::Simple->new($self->config_file) or die Config::Simple->error();
@@ -74,8 +77,6 @@ sub _create_config {
     $config->{$1} = delete $config->{$key} if $key =~ /^default\.(.*)/;
   }
   $config->{table_timeout} //= 10000;
-  $self->host( $self->host // $config->{host} // 'localhost');
-  $self->port( $self->port // $config->{port} // 34001);
   return $config;
 }
 
