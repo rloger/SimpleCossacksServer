@@ -168,9 +168,9 @@ sub _join_to_room {
 sub user_details {
   my($self, $h, $p) = @_;
   if($p->{ID} >= 0x7FFFFFFF) {
-    $self->_alert($h, "Player Server", "This is LCN game server player")
+    $self->_alert($h, "Player Server", "This is cossacs-server.net player")
   } else {
-    $self->_alert($h, "Player Server", "This is GSC game server player")
+    $self->_alert($h, "Player Server", "This is gsc game server player")
   }
 }
 

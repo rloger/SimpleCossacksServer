@@ -8,7 +8,7 @@
 
 
 #font(BF,BF,BF)
-#ctxt[%TIT](%LBX[x:0,y:-1+190,w:100%,h:30],{},"newlcn.com game server")
+#ctxt[%TIT](%LBX[x:0,y:-1+190,w:100%,h:30],{},"cossacks-server.net")
 
 #font(WF,WF,WF)
 #txt(%LBX[x:10,y:167,w:100%,h:24],{},"Your nick:")

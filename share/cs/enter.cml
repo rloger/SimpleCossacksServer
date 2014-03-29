@@ -2,7 +2,7 @@
 #pan[%MPN](%BOX[x:0,y:0,w:100%,h:100%],8)
 
 #font(WF,WF,WF)
-#ctxt[%TIT](%BOX[x:0,y:6,w:100%,h:30],{},"newlcn.com game server")
+#ctxt[%TIT](%BOX[x:0,y:6,w:100%,h:30],{},"cossacks-server.net")
 
 #font(WF,WF,WF)
 #txt(%BOX[x:10,y:52,w:100%,h:24],{},"Your nick:")
