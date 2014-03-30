@@ -107,15 +107,17 @@ sub leave_room {
   $room->{players_count}--;
   $room->{row}[-3] = $room->{players_count} . "/" . $room->{max_players};
 
-  if($room->{host_id} == $player_id) {
+  if($room->{started} && $room->{players_count} <= 0 || $room->{host_id} == $player_id) {
     delete $self->data->{rooms_by_ctlsum}{ $room->{ctlsum} };
     delete $self->data->{rooms_by_id}{ $room->{id} };
-    my $rooms_list = $self->data->{dbtbl}{ "ROOMS_V" . $room->{ver} };
-    for(my $i = 0; $i < @$rooms_list; $i++) {
+    if($room->{host_id} == $player_id) {
+      my $rooms_list = $self->data->{dbtbl}{ "ROOMS_V" . $room->{ver} };
+      for(my $i = 0; $i < @$rooms_list; $i++) {
         if($rooms_list->[$i]{id} == $room->{id}) {
-            splice @$rooms_list, $i, 1;
-            last;
+          splice @$rooms_list, $i, 1;
+          last;
         } 
+      }
     }
   }
   return $room;
@@ -131,10 +133,10 @@ sub start_room {
     $room->{started} = 1;
     my $rooms_list = $self->data->{dbtbl}{ "ROOMS_V" . $room->{ver} };
     for(my $i = 0; $i < @$rooms_list; $i++) {
-        if($rooms_list->[$i]{id} == $room->{id}) {
-            splice @$rooms_list, $i, 1;
-            last;
-        } 
+      if($rooms_list->[$i]{id} == $room->{id}) {
+        splice @$rooms_list, $i, 1;
+        last;
+      } 
     }
   }
   return $room;

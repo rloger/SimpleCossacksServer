@@ -60,9 +60,15 @@ sub alive : Command {
   } );
 }
 
+sub stats : Command {
+  my($self, $h) = @_;
+  $self->alive($h);
+}
+
 sub leave : Command {
   my($self, $h) = @_;
   my $room = $h->server->leave_room( $h->connection->data->{id} ) if $h->connection->data->{id};
+  delete $h->server->data->{alive_timers}{ $h->connection->data->{id} };
   if($room) {
     if($room->{host_id} == $h->connection->data->{id}) {
       $h->log->info($h->connection->log_message . " " . $h->req->ver . " #leave his room $room->{id} $room->{title}");
@@ -89,8 +95,8 @@ sub start : Command {
 }
 
 sub upfile  : Command {}
-sub stats   : Command {}
 sub endgame : Command {}
+sub unsync  : Command {}
 
 sub _before {
   my($self, $h) = @_;
