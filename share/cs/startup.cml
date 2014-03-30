@@ -10,7 +10,7 @@
 #font(SYF,SWF,SWF)
 #txt(%BOTTOM[x:240,w:100%,y:7,h:24],{},"last start at <? server.data.start_at ?>")
 #font(YF,WF,WF)
-#rtxt(%BOTTOM[x1:100%-10,x:300,y:4,h:24],{},"www.cossacks-server.net")
+#rtxt(%BOTTOM[x1:100%-10,x:300,y:5,h:24],{},"www.cossacks-server.net")
 
 #box[%LBX](x:0,y:0,w:100%,h:100%-<? bottom_height ?>)
 

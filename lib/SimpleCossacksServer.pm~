@@ -13,11 +13,6 @@ has template_engine => (is => 'rw');
 has config_file => (is => 'ro');
 has connection_controller => (is => 'ro', default => sub { SimpleCossacksServer::ConnectionController->new() });
 has log_level => (is => 'rw');
-has config => (is => 'rw', builder => '_build_config');
-has host => (is => 'ro', default => sub { shift->config->{host} // 'localhost' });
-has port => (is => 'ro', default => sub { shift->config->{port} // 34001 });
-has log_access_ctx => (is => 'rw', builder => '_build_log_access_ctx');
-has log_error_ctx => (is => 'rw', builder => '_build_log_error_ctx');
 
 sub command_controller { 'SimpleCossacksServer::CommandController' }
 sub handler_class { 'SimpleCossacksServer::Handler' }
@@ -38,28 +33,11 @@ sub init {
     PLUGINS => {
         CMDFilter => 'SimpleCossacksServer::Template::Plugin::CMDFilter',
     },
+	EVAL_PERL    => 1,
   ) );
 
   # AnyEvent::Log
   $AnyEvent::Log::LOG->log_cb(sub { print STDERR shift; 0 });
-}
-
-sub _build_log_error_ctx {
-  my($self) = @_;
-  if($self->config->{error_log}) {
-    my $errorCtx = AnyEvent::Log::Ctx->new(
-      level => "warn",
-      log_to_file => $self->config->{error_log},
-    );
-    $AnyEvent::Log::COLLECT->attach($errorCtx);
-    return $errorCtx;
-  } else {
-    return undef;
-  }
-}
-
-sub _build_log_access_ctx {
-  my($self) = @_;
   my $ctx = AnyEvent::Log::ctx($self->meta->name);
   if($self->config->{access_log}) {
     my $infoCtx = AnyEvent::Log::Ctx->new(
@@ -71,9 +49,13 @@ sub _build_log_access_ctx {
       return "[" . POSIX::strftime("%Y-%m-%d/%H:%M:%S", localtime $time) . sprintf(".%03d", ($time - int $time)*1000 ) . "] " . $message . "\n";
     });
     $ctx->attach($infoCtx);
-    return $infoCtx;
-  } else {
-    return undef;
+  }
+  if($self->config->{error_log}) {
+    my $errorCtx = AnyEvent::Log::Ctx->new(
+      level => "warn",
+      log_to_file => $self->config->{error_log},
+    );
+    $AnyEvent::Log::COLLECT->attach($errorCtx);
   }
 }
 
@@ -84,40 +66,7 @@ sub start {
   $self->SUPER::start(@_);
 }
 
-sub reload {
-  my $self = shift;
-  $self->log->notice('reset server');
-
-  $self->reload_config;
-
-  if($self->config->{access_log}) {
-    if($self->log_access_ctx) {
-      $self->log_access_ctx->log_to_file( $self->config->{access_log} );
-    } else {
-      $self->log_access_ctx( $self->_build_log_access_ctx );
-    }
-  } else {
-    if($self->log_access_ctx) {
-      AnyEvent::Log::ctx($self->meta->name)->detach($self->log_access_ctx);
-      $self->log_access_ctx(undef);
-    }
-  }
-
-  if($self->config->{error_log}) {
-    if($self->log_error_ctx) {
-      $self->log_error_ctx->log_to_file( $self->config->{error_log} );
-    } else {
-      $self->log_error_ctx( $self->_build_log_error_ctx );
-    }
-  } else {
-    if($self->log_error_ctx) {
-      $AnyEvent::Log::COLLECT->detach($self->log_error_ctx);
-      $self->log_error_ctx(undef);
-    }
-  }
-}
-
-sub _build_config {
+sub _create_config {
   my($self) = @_;
   my $config = {};
   my $cfg = Config::Simple->new($self->config_file) or die Config::Simple->error();
@@ -126,20 +75,9 @@ sub _build_config {
     $config->{$1} = delete $config->{$key} if $key =~ /^default\.(.*)/;
   }
   $config->{table_timeout} //= 10000;
+  $self->host( $self->host // $config->{host} // 'localhost');
+  $self->port( $self->port // $config->{port} // 34001);
   return $config;
-}
-
-sub reload_config {
-  my($self) = @_;
-  my $config = {};
-  my $cfg = Config::Simple->new($self->config_file) or $self->log->error( Config::Simple->error() );
-  $config = $cfg->vars();
-  for my $key (keys %$config) {
-    $config->{$1} = delete $config->{$key} if $key =~ /^default\.(.*)/;
-  }
-  @$config{'port', 'host'} = @{$self->config}{'host', 'port'};
-  $config->{table_timeout} //= 10000;
-  $self->config($config);
 }
 
 sub _room_control_sum {
@@ -169,18 +107,11 @@ sub leave_room {
   $room->{players_count}--;
   $room->{row}[-3] = $room->{players_count} . "/" . $room->{max_players};
 
-  if($room->{started} && $room->{players_count} <= 0 || $room->{host_id} == $player_id) {
+  if($room->{host_id} == $player_id) {
     delete $self->data->{rooms_by_ctlsum}{ $room->{ctlsum} };
     delete $self->data->{rooms_by_id}{ $room->{id} };
-    if($room->{host_id} == $player_id) {
-      my $rooms_list = $self->data->{dbtbl}{ "ROOMS_V" . $room->{ver} };
-      for(my $i = 0; $i < @$rooms_list; $i++) {
-        if($rooms_list->[$i]{id} == $room->{id}) {
-          splice @$rooms_list, $i, 1;
-          last;
-        } 
-      }
-    }
+    my $rooms_list = $self->data->{dbtbl}{ "ROOMS_V" . $room->{ver} };
+    splice @$rooms_list, $room->{number}, 1;
   }
   return $room;
 }
@@ -194,12 +125,7 @@ sub start_room {
     delete $self->data->{rooms_by_id}{ $room->{id} };
     $room->{started} = 1;
     my $rooms_list = $self->data->{dbtbl}{ "ROOMS_V" . $room->{ver} };
-    for(my $i = 0; $i < @$rooms_list; $i++) {
-      if($rooms_list->[$i]{id} == $room->{id}) {
-        splice @$rooms_list, $i, 1;
-        last;
-      } 
-    }
+    splice @$rooms_list, $room->{number}, 1;
   }
   return $room;
 }

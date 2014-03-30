@@ -29,6 +29,7 @@ sub try_enter {
   } else {
     my $g = $h->server->data;
     my $id;
+    $DB::single=1;
     unless($h->connection->data->{id}) {
       if(@{$g->{ids}}) {
         push @{$g->{ids}}, $id = $g->{ids}->[-1] + 1;

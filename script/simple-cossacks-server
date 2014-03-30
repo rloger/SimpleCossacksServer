@@ -24,9 +24,10 @@ $args{port} = $opts{port} if defined $opts{port};
 $args{log_level} = $opts{log} if defined $opts{log};
 
 require SimpleCossacksServer;
-my $server = SimpleCossacksServer->new(%args);
+our $server = SimpleCossacksServer->new(%args);
 
 $Coro::State::WARNHOOK = sub { $server->log->warn(shift) };
+$SIG{HUP} = sub { Coro::async(sub{$server->reload}) };
 
 $server->start->join;
 

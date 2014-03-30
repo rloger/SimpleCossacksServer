@@ -104,8 +104,9 @@ sub _before {
   my $args = $h->req->argsref;
   my $message = $h->connection->log_message;
   my $win = $h->req->win;
-  $win =~ s/\0$//;
-  $message .= ' ' . $h->req->ver . ' ' . $h->req->lang . ' ' . $h->req->num . ' "' . String::Escape::printable($win) . '"';
+  my $key = $h->req->key;
+  s/\0$// for $win, $key;
+  $message .= ' ' . $h->req->ver . ' ' . $h->req->lang . ' ' . $h->req->num . ' "' . String::Escape::printable($win) . '" "' . String::Escape::printable($key) . '"';
   if($cmd eq 'upfile') {
     $message .= " -$cmd " . join " ", map { '"' . String::Escape::printable($_) . '"' } @$args[0..1];
     my($offset, $size, $buffer) = unpack "LLA*", $args->[2];
@@ -122,7 +123,7 @@ sub _before {
     $message .= " -$cmd ";
     $message .= " u1=$u1,u2=$u2,n=$n,sc=$sc,pp=$pp,w=$w,g=$g,s=$s,f=$f,i=$i,c=$c,p=$p,u=$u";
     $message .= ",tail=$tail" if defined($tail) && length($tail) > 0;
-    $message .= " " . uc unpack 'H*', $args->[0];
+    #$message .= " " . uc unpack 'H*', $args->[0];
     $message .= " " . join " ", map { '"' . String::Escape::printable($_) . '"' } @$args[1..$#$args] if $#$args >= 1;
   } elsif($cmd eq 'GETTBL') {
     $message .= " -$cmd " . join " ", map { '"' . String::Escape::printable($_) . '"' } @$args[0..1];
