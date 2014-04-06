@@ -25,3 +25,7 @@
 
 <NGDLG>
 <NGDLG>
+
+#block(cancel.cml,CAN)<NGDLG>
+<NGDLG>
+#end(CAN)

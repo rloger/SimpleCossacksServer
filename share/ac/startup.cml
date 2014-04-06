@@ -44,3 +44,7 @@
 #rtxt(%LBX[x:300,x1:100%,y:100%-25,h:28],{},"last start at <? server.data.start_at ?>")
 <NGDLG>
 <NGDLG>
+
+#block(cancel.cml,CAN)<NGDLG>
+<NGDLG>
+#end(CAN)
