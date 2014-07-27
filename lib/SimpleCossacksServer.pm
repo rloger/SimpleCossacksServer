@@ -169,17 +169,16 @@ sub leave_room {
   $room->{players_count}--;
   $room->{row}[-3] = $room->{players_count} . "/" . $room->{max_players};
 
-  if($room->{started} && $room->{players_count} <= 0 || $room->{host_id} == $player_id) {
+  if($room->{started} ? $room->{players_count} <= 0 : $room->{host_id} == $player_id) {
+    # в случае $room->{started} очистка лишняя, но на всякий случай оставим
     delete $self->data->{rooms_by_ctlsum}{ $room->{ctlsum} };
     delete $self->data->{rooms_by_id}{ $room->{id} };
-    if($room->{host_id} == $player_id) {
-      my $rooms_list = $self->data->{dbtbl}{ "ROOMS_V" . $room->{ver} };
-      for(my $i = 0; $i < @$rooms_list; $i++) {
-        if($rooms_list->[$i]{id} == $room->{id}) {
-          splice @$rooms_list, $i, 1;
-          last;
-        } 
-      }
+    my $rooms_list = $self->data->{dbtbl}{ "ROOMS_V" . $room->{ver} };
+    for(my $i = 0; $i < @$rooms_list; $i++) {
+      if($rooms_list->[$i]{id} == $room->{id}) {
+        splice @$rooms_list, $i, 1;
+        last;
+      } 
     }
   }
   return $room;
