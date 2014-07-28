@@ -127,6 +127,7 @@ sub _join_to_room {
   my($self, $h, $room, $astate, $password) = @_;
   if(!$h->connection->data->{id} || !$h->connection->data->{nick}) {
     $self->_error($h, "Your was disconnected from the server. Enter again.");
+    return;
   }
   if(!$astate) {
     $self->_error($h, "You can not create or join room!\nYou are already participate in some room\nPlease disconnect from that room first to create a new one");
