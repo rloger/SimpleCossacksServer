@@ -12,7 +12,7 @@ sub init {
 
 sub filter {
     my ($self, $text) = @_;
-    $text =~ s/([&|\\},])/sprintf "\\%02X", ord $1/ge;
+    $text =~ s/([&|\\}~])/sprintf "\\%02X", ord $1/ge;
     return $text;
 }
 
