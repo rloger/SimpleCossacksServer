@@ -145,7 +145,7 @@ sub not_alive {
   my $room = $h->server->leave_room( $id );
   delete $h->server->data->{alive_timers}{ $id };
   if($room) {
-    if($room->{host_id} = $id) {
+    if($room->{host_id} == $id) {
       $h->log->info($connection->log_message . " " . $h->req->ver . " #not alive in his room $room->{id} $room->{title}");
     } else {
       $h->log->info($connection->log_message . " " . $h->req->ver . " #not alive in room $room->{id} $room->{title}");      
