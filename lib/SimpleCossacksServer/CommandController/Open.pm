@@ -154,13 +154,13 @@ sub _join_to_room {
   $h->server->data->{alive_timers}{ $player_id } = AnyEvent->timer( after => 150, cb => sub {
     $h->server->command_controller($h)->not_alive($h, $connection);
   } );
-  $h->push_command(
-    LW_show =>
-      ':LW_gvar&%CG_GAMEID&' . $room->{id}
-      . '&%CG_MAXPL&' . $room->{max_players}
-      . '&%CG_GAMENAME&' . $room->{title}
-      . '&%COMMAND&JGAME&%CG_IP&' . $room->{host_addr}
-  );
+  $h->push_command( LW_gvar => (
+        '%CG_GAMEID'   => $room->{id},
+        '%CG_MAXPL'    => $room->{max_players},
+        '%CG_GAMENAME' => $room->{title},
+        '%COMMAND'     => 'JGAME',
+        '%CG_IP'       => $room->{host_addr},
+  ));
   $h->log->info($h->connection->log_message . " " . $h->req->ver . " #join room $room->{id} $room->{title}" );
 }
 
