@@ -67,16 +67,20 @@ sub stats : Command {
 
 sub leave : Command {
   my($self, $h) = @_;
-  my $room = $h->server->leave_room( $h->connection->data->{id} ) if $h->connection->data->{id};
-  delete $h->server->data->{alive_timers}{ $h->connection->data->{id} };
-  if($room) {
-    if($room->{host_id} == $h->connection->data->{id}) {
-      $h->log->info($h->connection->log_message . " " . $h->req->ver . " #leave his room $room->{id} $room->{title}");
+  if($h->connection->data->{id}) {
+    my $room = $h->server->leave_room( $h->connection->data->{id} );
+    delete $h->server->data->{alive_timers}{ $h->connection->data->{id} };
+    if($room) {
+      if($room->{host_id} == $h->connection->data->{id}) {
+        $h->log->info($h->connection->log_message . " " . $h->req->ver . " #leave his room $room->{id} $room->{title}");
+      } else {
+        $h->log->info($h->connection->log_message . " " . $h->req->ver . " #leave room $room->{id} $room->{title}");
+      }
     } else {
-      $h->log->info($h->connection->log_message . " " . $h->req->ver . " #leave room $room->{id} $room->{title}");
+      $h->log->warn($h->connection->log_message . " " . $h->req->ver . " have not room for leave");
     }
   } else {
-    $h->log->warn($h->connection->log_message . " " . $h->req->ver . " have not room for leave");
+    $h->log->warn($h->connection->log_message . " " . $h->req->ver . " no id for live room");
   }
 }
 
