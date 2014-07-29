@@ -148,9 +148,12 @@ sub _join_to_room {
   my $player_id = $h->connection->data->{id};
   $h->server->leave_room( $player_id );
   $h->server->data->{rooms_by_player}{ $player_id } = $room;
+  delete $h->server->data->{rooms_by_ctlsum}->{ $room->{ctlsum} };
   $room->{players}{ $player_id } = 1;
   $room->{players_count}++;
   $room->{row}[-3] = $room->{players_count} . "/" . $room->{max_players};
+  $room->{ctlsum} = $h->server->_room_control_sum($room->{row});
+  $h->server->data->{rooms_by_ctlsum}->{ $room->{ctlsum} } = $room;
   my $connection = $h->connection;
   $h->server->data->{alive_timers}{ $player_id } = AnyEvent->timer( after => 150, cb => sub {
     $h->server->command_controller($h)->not_alive($h, $connection);
