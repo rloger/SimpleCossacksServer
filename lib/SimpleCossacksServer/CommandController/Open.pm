@@ -109,7 +109,7 @@ sub reg_new_room {
       $h->server->command_controller($h)->not_alive($h, $connection);
     } );
     $h->log->info($h->connection->log_message . " " . $h->req->ver . " #create room $room->{id} $room->{title}" );
-    $h->show('reg_new_room.cml', { id => ($p->{VE_TYPE} ? "HB" : "") . $room_id, name => ( $room->{title} =~ s/,/_/gr), max_pl => $room->{max_players} });
+    $h->show('reg_new_room.cml', { id => ($p->{VE_TYPE} ? "HB" : "") . $room_id, name => $room->{title}, max_pl => $room->{max_players} });
   }
 }
 
