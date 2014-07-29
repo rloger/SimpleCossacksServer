@@ -142,7 +142,7 @@ sub _join_to_room {
     return;
   }
   if($room->{password} ne '' && $password ne $room->{password}) {
-    $h->show('confirm_password_dgl.cml');
+    $h->show('confirm_password_dgl.cml', { id => $room->{id} });
     return;
   }
   my $player_id = $h->connection->data->{id};
