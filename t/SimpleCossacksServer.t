@@ -7,14 +7,21 @@
 
 use strict;
 use warnings;
+use Test::More;
+use Net::EmptyPort;
 
-use Test::More tests => 2;
 BEGIN { use_ok('SimpleCossacksServer') };
 
+my $port = Net::EmptyPort::empty_port();
+
 my $server = new_ok(SimpleCossacksServer => [
-  config_file => './etc/simple-cossacks-server.conf'
+  config_file => './etc/simple-cossacks-server.conf',
+  port => $port,
 ]);
 
+ok(eval { $server->start() }, "start server");
+
+done_testing();
 #########################
 
 # Insert your test code below, the Test::More module is use()ed here so read

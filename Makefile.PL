@@ -11,6 +11,7 @@ WriteMakefile(
         'POSIX' => 0,
         'String::Escape' => 0,
         'Getopt::Compact' => 0,
+        'Net::EmptyPort' => 0, # for tests
     },
     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
       (ABSTRACT_FROM  => 'lib/SimpleCossacksServer.pm', # retrieve abstract from module
