@@ -155,9 +155,6 @@ sub _join_to_room {
   $room->{ctlsum} = $h->server->_room_control_sum($room->{row});
   $h->server->data->{rooms_by_ctlsum}->{ $room->{ctlsum} } = $room;
   my $connection = $h->connection;
-  $h->server->data->{alive_timers}{ $player_id } = AnyEvent->timer( after => 150, cb => sub {
-    $h->server->command_controller($h)->not_alive($h, $connection);
-  } );
   $h->push_command( LW_gvar => (
         '%CG_GAMEID'   => $room->{id},
         '%CG_MAXPL'    => $room->{max_players},
