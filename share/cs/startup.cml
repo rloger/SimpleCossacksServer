@@ -6,7 +6,7 @@
 #box[%BOTTOM](x:0,w:100%,y:100%-<? bottom_height ?>,h:<? bottom_height ?>)
 #pan(%BOTTOM[x:0-1,w:100%+2,y:0-1,h:100%+2],1)
 #btn(%BOTTOM[x:5,y:4,w:80,h:28],{GW|open&join_game.dcml&ASTATE=<%ASTATE>^VE_RID=<%RL_ID>},"Join")
-#btn(%BOTTOM[x:95,y:4,w:80,h:28],{GW|open&room_info_dgl.dcml&VE_RID=<%RL_ID>|LW_lockall},"Info")
+#btn(%BOTTOM[x:95,y:4,w:80,h:28],{GW|open&room_info_dgl.dcml&VE_RID=<%RL_ID>},"Info")
 #btn(%BOTTOM[x:185,y:4,w:80,h:28],{GW|open&new_room_dgl.dcml&ASTATE=<%ASTATE>|LW_lockall},"New")
 #font(SYF,SWF,SWF)
 #txt(%BOTTOM[x:275,w:100%,y:7,h:24],{},"last start at <? server.data.start_at ?>")
