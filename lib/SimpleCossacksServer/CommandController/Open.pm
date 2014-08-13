@@ -219,7 +219,15 @@ sub join_pl_cmd {
   } else {
     $h->push_empty, return if $h->connection->data->{id} && $h->server->data->{rooms_by_player}{ $h->connection->data->{id} };
     my $room = $h->server->data->{rooms_by_player}{ $p->{VE_PLAYER} };
-    $self->_join_to_room($h, $room, 1, '');
+    if(!$room) {
+      return;
+    } elsif($room->{started}) {
+       $self->_error($h, "Game alredy started"); 
+      return;
+    } else {
+      $self->room_info_dgl($h, { VE_RID => $room->{id} });
+      return;
+    }
   }
 }
 
