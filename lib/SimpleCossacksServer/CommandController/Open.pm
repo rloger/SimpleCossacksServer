@@ -213,7 +213,7 @@ sub user_details {
 
 sub join_pl_cmd {
   my($self, $h, $p) = @_;
-  unless($p->{VE_PLAYER} >= 0x7FFFFFFF) {
+  if($p->{VE_PLAYER} < 0x7FFFFFFF) {
     $self->_error($h, "This is GSC game server player");
     return;
   } else {
