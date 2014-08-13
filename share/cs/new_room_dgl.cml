@@ -4,8 +4,8 @@
 #exec(LW_enb&0&%RMLST)
 #font(WF,WF,YF)
 
-#ebox[%L](x:180,y:20,w:100%-380,h:160)
-#ebox[%E](x:180,y:14,w:100%-380,h:210)
+#ebox[%L](x:180,y:20,w:100%-380,h:165)
+#ebox[%E](x:180,y:14,w:100%-380,h:30)
 #pan[%MPN](%L[x:0,y:0,w:100%,h:100%],8)
 #ctxt[%TIT](%E[x:0,y:12,w:100%,h:10],{},"Create new game")
 
@@ -31,9 +31,11 @@
 #font(YF,WF,WF)
 #cbb[%E_LEVEL](%L[x:130,y:121,w:100%-150,h:24],{%GV_VE_LEVEL},--,Easy,Normal,Hard,0)
 
+#font(SYF,SWF,SWF)
+#txt(%L[x:20,y:146,w:100%,h:24],{},"NOTE: You shall have the WHITE ip address to create server")
+
 #font(YF,WF,YF)
 
 #sbtn[%B_RGST](%L[x:43,y:100%+5,w:100,h:24],{GW|open&reg_new_room.dcml&ASTATE=<%ASTATE>^VE_TITLE=<%GV_VE_TITLE>^VE_MAX_PL=<%GV_VE_MAX_PL>^VE_PASSWD=<%GV_VE_PASSWD>^VE_LEVEL=<%GV_VE_LEVEL>|LW_lockall},"Create")
-
 #sbtn[%B_RGST](%L[x:230,y:100%+5,w:100,h:24],{LW_file&Internet/Cash/cancel.cml},"Cancel")
 <NGDLG>
