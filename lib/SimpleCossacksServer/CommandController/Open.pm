@@ -4,7 +4,7 @@ use Mouse;
 my @PUBLIC = qw[
   enter try_enter startup games new_room_dgl reg_new_room 
   join_game join_pl_cmd user_details users_list direct direct_ping 
-  direct_join
+  direct_join room_info_dgl
 ];
 
 
@@ -41,6 +41,7 @@ sub try_enter {
     }
     $h->connection->data->{nick} = $nick;
     $h->log->info($h->connection->log_message . " " . $h->req->ver . " #enter");
+    $g->{nicks}{$id} = $nick;
     $h->show('ok_enter.cml', { P => $p, id => $id});
   }
 }
@@ -93,11 +94,14 @@ sub reg_new_room {
       password       => $p->{VE_PASSWD} // '',
       host_id        => $player_id,
       host_addr      => $h->connection->ip,
+      host_addr_int  => $h->connection->int_ip,
       players_count  => 1,
-      players        => { $player_id => 1 },
+      players        => { $player_id => time },
       max_players    => $p->{VE_MAX_PL} + 2,
       passwd         => $p->{VE_PASSWD},
       ver            => $h->req->ver,
+      level          => int($p->{VE_LEVEL}),
+      ctime          => time,
       ctlsum         => $ctlsum,
     };
     push @$rooms, $room;
@@ -111,6 +115,44 @@ sub reg_new_room {
     $h->log->info($h->connection->log_message . " " . $h->req->ver . " #create room $room->{id} $room->{title}" );
     $h->show('reg_new_room.cml', { id => ($p->{VE_TYPE} ? "HB" : "") . $room_id, name => $room->{title}, max_pl => $room->{max_players} });
   }
+}
+
+sub room_info_dgl {
+  my($self, $h, $p) = @_;
+  if($p->{VE_RID} !~ /^\d+$/) {
+    $h->push_command( LW_show => "<NGDLG>\n<NGDLG>");
+    return;
+  }
+  my $room = $h->server->data->{rooms_by_id}{ $p->{VE_RID} };
+  unless($room->{id}) {
+    $self->_error($h, "The room is closed");
+    return;
+  }
+  $h->show('room_info_dgl.cml', { room => $room, room_time => $self->_time_interval($room->{ctime}) });
+}
+
+sub _time_interval {
+    my($self, $ctime) = @_;
+    my $time = time - $ctime;
+    my @tm;
+
+    my $d = int($time / 86400);
+    $time %= 86400;
+    push @tm, "${d}d" if $d;
+
+    my $h = int($time / 3600);
+    $time %= 3600;
+    push @tm, "${h}h" if $h;
+    return join " ", @tm if $d;
+
+    my $m = int($time / 60);
+    $time %= 60;
+    push @tm, "${m}m" if $m;
+    return join " ", @tm if $h || $m >= 10;
+
+    my $s = $time;
+    push @tm, "${s}s" if $s;
+    return @tm ? join(" ", @tm) : "0s";
 }
 
 sub join_game {
@@ -150,6 +192,7 @@ sub _join_to_room {
   $h->server->data->{rooms_by_player}{ $player_id } = $room;
   delete $h->server->data->{rooms_by_ctlsum}->{ $room->{ctlsum} };
   $room->{players}{ $player_id } = 1;
+  $room->{players}{ $player_id } = time;
   $room->{players_count}++;
   $room->{row}[-3] = $room->{players_count} . "/" . $room->{max_players};
   $room->{ctlsum} = $h->server->_room_control_sum($room->{row});

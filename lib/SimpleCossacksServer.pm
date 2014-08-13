@@ -37,6 +37,7 @@ sub init {
     END_TAG      => '\?>',
     PLUGINS => {
         CMDFilter => 'SimpleCossacksServer::Template::Plugin::CMDFilter',
+        CMLStringArgFilter => 'SimpleCossacksServer::Template::Plugin::CMLStringArgFilter',
     },
   ) );
 

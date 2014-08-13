@@ -17,6 +17,7 @@ sub _close {
         last;
       }
     }
+    delete $h->server->data->{nicks}{$id};
   }
   $h->log->info($h->connection->log_message . ' #disconnect');
 }
