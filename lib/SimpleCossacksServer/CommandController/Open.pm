@@ -198,13 +198,7 @@ sub _join_to_room {
   $room->{ctlsum} = $h->server->_room_control_sum($room->{row});
   $h->server->data->{rooms_by_ctlsum}->{ $room->{ctlsum} } = $room;
   my $connection = $h->connection;
-  $h->push_command( LW_gvar => (
-        '%CG_GAMEID'   => $room->{id},
-        '%CG_MAXPL'    => $room->{max_players},
-        '%CG_GAMENAME' => $room->{title},
-        '%COMMAND'     => 'JGAME',
-        '%CG_IP'       => $room->{host_addr},
-  ));
+  $h->show('join_room.cml' => { id => $room->{id}, max_pl => $room->{max_players}, name => $room->{title}, ip => $room->{host_addr} });
   $h->log->info($h->connection->log_message . " " . $h->req->ver . " #join room $room->{id} $room->{title}" );
 }
 

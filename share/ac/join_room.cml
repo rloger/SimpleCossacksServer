@@ -1,0 +1,5 @@
+<?~ USE CMDFilter ~?>
+<NGDLG>
+#exec(LW_gvar&%CG_GAMEID&<? id | cmd ?>&%CG_MAXPL&<? max_pl | cmd ?>&%CG_GAMENAME&<? name | cmd ?>&%COMMAND&JGAME&%CG_IP&<? ip | cmd ?>\00)
+#exec(LW_file&Internet/Cash/cancel.cml\00)
+<NGDLG>
