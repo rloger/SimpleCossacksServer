@@ -194,7 +194,6 @@ sub start_room {
   
   if($room->{host_id} == $player_id) {
     delete $self->data->{rooms_by_ctlsum}{ $room->{ctlsum} };
-    delete $self->data->{rooms_by_id}{ $room->{id} };
     $room->{started} = 1;
     my $rooms_list = $self->data->{dbtbl}{ "ROOMS_V" . $room->{ver} };
     for(my $i = 0; $i < @$rooms_list; $i++) {

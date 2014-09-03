@@ -98,8 +98,27 @@ sub start : Command {
   }
 }
 
+sub endgame : Command {
+    my($self, $h, $game_id, $player_id, $result) = @_;
+    ($_) = /(-?\d+)/ for $game_id, $player_id, $result;
+    $player_id = unpack 'L', pack 'l', $player_id;
+    my $id = $h->connection->data->{id};
+    my $short_player_id = $player_id - 0x7FFFFFFF + 1;
+    my $nick_name = ($h->server->data->{nicks}{$player_id} // '.') . ":$short_player_id";
+    my $result_str = $result == 1 ? 'loose' :
+        $result == 2 ? 'win' :
+        $result == 5 ? 'disconnect' :
+        "?$result?"
+    ;
+    my $room = $h->server->data->{rooms_by_id}{ $game_id };
+    $h->log->info(
+        $h->connection->log_message . " " . $h->req->ver . " #send game result: $nick_name $result_str in "
+        . ($room && $id && $room->{host_id} == $id ? "his " : "" )
+        . "game $game_id"
+        . ($room ? " $room->{title}" : "")
+    );
+}
 sub upfile  : Command {}
-sub endgame : Command {}
 sub unsync  : Command {}
 
 sub _before {
@@ -142,8 +161,8 @@ sub _before {
 sub not_alive {
   my($self, $h, $connection) = @_;
   my $id = $connection->data->{id};
-  my $room = $h->server->leave_room( $id );
   delete $h->server->data->{alive_timers}{ $id };
+  my $room = $h->server->leave_room( $id );
   if($room) {
     if($room->{host_id} == $id) {
       $h->log->info($connection->log_message . " " . $h->req->ver . " #not alive in his room $room->{id} $room->{title}");
