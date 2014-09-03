@@ -89,9 +89,9 @@ sub start : Command {
   my $room = $h->server->start_room( $h->connection->data->{id} );
   if($room) {
     if($room->{host_id} == $h->connection->data->{id}) {
-      $h->log->info($h->connection->log_message . " " . $h->req->ver . " #start game $room->{id} $room->{title}");
-    } else {
       $h->log->info($h->connection->log_message . " " . $h->req->ver . " #start his game $room->{id} $room->{title}");
+    } else {
+      $h->log->info($h->connection->log_message . " " . $h->req->ver . " #start game $room->{id} $room->{title}");
     }
   } else {
      $h->log->warn($h->connection->log_message . " have not game for start"); 
