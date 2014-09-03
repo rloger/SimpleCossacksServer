@@ -94,6 +94,7 @@ sub start : Command {
       $h->log->info($h->connection->log_message . " " . $h->req->ver . " #start game $room->{id} $room->{title}");
     }
   } else {
+     $h->log->info($h->connection->log_message . " " . $h->req->ver . " #start game ?unknown?");
      $h->log->warn($h->connection->log_message . " have not game for start"); 
   }
 }
