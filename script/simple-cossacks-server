@@ -27,7 +27,18 @@ require SimpleCossacksServer;
 our $server = SimpleCossacksServer->new(%args);
 
 $Coro::State::WARNHOOK = sub { $server->log->warn(shift) };
-$SIG{HUP} = sub { Coro::async(sub{$server->reload}) };
+$SIG{HUP} = sub {
+  Coro::async(sub{$server->reload});
+  # дебаг-дамп сервера
+  eval {
+    local $Data::Dumper::Varname = 'server';
+    my $dump = $server->dump(0);
+    my $filename = POSIX::strftime("/tmp/simple-cossacks-server-dump-%Y-%m-%d_%H-%M-%S", localtime);
+    open my($fh), ">", $filename;
+    print $fh $dump;
+    close $fh;
+  }
+};
 
 $server->start->join;
 
