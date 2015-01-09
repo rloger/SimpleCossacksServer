@@ -25,7 +25,9 @@ sub try_enter {
   if(!defined($nick) || $nick eq '') {
     $h->show('error_enter.cml', { error_text => 'Enter nick' });
   } elsif($nick !~ /^[\[\]_\w-]+$/) {
-    $h->show('error_enter.cml', { error_text => 'Bad character in nick' });
+    $h->show('error_enter.cml', { error_text => 'Bad character in nick. Nick can contain only a-z,A-Z,0-9,[]_-' });
+  } elsif($nick =~ /^([0-9-])/) {
+    $h->show('error_enter.cml', { error_text => "Bad character in nick. Nick can't start with " . ($1 eq '-' ? '-' : 'didgt') });
   } else {
     my $g = $h->server->data;
     my $id;
