@@ -171,11 +171,8 @@ sub leave_room {
   $room->{players_count}--;
   $room->{row}[-3] = $room->{players_count} . "/" . $room->{max_players};
   $room->{ctlsum} = $self->_room_control_sum($room->{row});
-  $self->data->{rooms_by_ctlsum}->{ $room->{ctlsum} } = $room;
 
   if($room->{started} ? $room->{players_count} <= 0 : $room->{host_id} == $player_id) {
-    # в случае $room->{started} очистка лишняя, но на всякий случай оставим
-    delete $self->data->{rooms_by_ctlsum}{ $room->{ctlsum} };
     delete $self->data->{rooms_by_id}{ $room->{id} };
     my $rooms_list = $self->data->{dbtbl}{ "ROOMS_V" . $room->{ver} };
     for(my $i = 0; $i < @$rooms_list; $i++) {
@@ -184,6 +181,8 @@ sub leave_room {
         last;
       } 
     }
+  } else {
+    $self->data->{rooms_by_ctlsum}->{ $room->{ctlsum} } = $room;
   }
   return $room;
 }
