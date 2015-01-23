@@ -182,7 +182,7 @@ sub leave_room {
       } 
     }
   } else {
-    $self->data->{rooms_by_ctlsum}->{ $room->{ctlsum} } = $room;
+    $self->data->{rooms_by_ctlsum}->{ $room->{ctlsum} } = $room unless $room->{started};
   }
   return $room;
 }
