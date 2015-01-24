@@ -165,7 +165,7 @@ sub leave_room {
   my($self, $player_id) = @_;
   my $room = $self->data->{rooms_by_player}{$player_id} or return;
   
-  delete $self->data->{rooms_by_player}{ $player_id };
+  my $in_ctrl_sum = delete $self->data->{rooms_by_player}{ $player_id };
   delete $room->{players}{ $player_id };
   delete $self->data->{rooms_by_ctlsum}->{ $room->{ctlsum} };
   $room->{players_count}--;
@@ -182,7 +182,7 @@ sub leave_room {
       } 
     }
   } else {
-    $self->data->{rooms_by_ctlsum}->{ $room->{ctlsum} } = $room unless $room->{started};
+    $self->data->{rooms_by_ctlsum}->{ $room->{ctlsum} } = $room if $in_ctrl_sum;
   }
   return $room;
 }
