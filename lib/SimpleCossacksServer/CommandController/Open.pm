@@ -27,7 +27,7 @@ sub try_enter {
   } elsif($nick !~ /^[\[\]_\w-]+$/) {
     $h->show('error_enter.cml', { error_text => 'Bad character in nick. Nick can contain only a-z,A-Z,0-9,[]_-' });
   } elsif($nick =~ /^([0-9-])/) {
-    $h->show('error_enter.cml', { error_text => "Bad character in nick. Nick can't start with " . ($1 eq '-' ? '-' : 'digit') });
+    $h->show('error_enter.cml', { error_text => "Bad character in nick. Nick can't start with " . ($1 eq '-' ? '-' : 'numerical digit') });
   } else {
     my $g = $h->server->data;
     my $id;
