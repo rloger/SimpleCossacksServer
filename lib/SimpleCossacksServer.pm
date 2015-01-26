@@ -165,9 +165,9 @@ sub leave_room {
   my($self, $player_id) = @_;
   my $room = $self->data->{rooms_by_player}{$player_id} or return;
   
-  my $in_ctrl_sum = delete $self->data->{rooms_by_player}{ $player_id };
+  delete $self->data->{rooms_by_player}{ $player_id };
   delete $room->{players}{ $player_id };
-  delete $self->data->{rooms_by_ctlsum}->{ $room->{ctlsum} };
+  my $in_ctrl_sum = delete $self->data->{rooms_by_ctlsum}->{ $room->{ctlsum} };
   $room->{players_count}--;
   $room->{row}[-3] = $room->{players_count} . "/" . $room->{max_players};
   $room->{ctlsum} = $self->_room_control_sum($room->{row});
