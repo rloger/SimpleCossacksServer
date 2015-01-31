@@ -11,6 +11,7 @@ sub _close {
   my($self, $h) = @_;
   my $ids = $h->server->data->{ids};
   if(my $id = $h->connection->data->{id}) {
+    $h->server->leave_room($id);
     for(my $i = 0; $i < @$ids; $i++) {
       if($ids->[$i] == $id) {
         splice @$ids, $i, 1;
