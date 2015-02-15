@@ -31,7 +31,7 @@
 #font(WF,WF,WF)
 #txt[%L_ROOM](%B[x:20,y:%<? player.account ? "L_ACCOUNT" : "L_CTIME" ?>+6,w:100%,h:100],{},"Room")
 #font(YF,WF,WF)
-#txt[%T_ROOM](%B[x:105,y:%<? player.account ? "L_ACCOUNT" : "L_CTIME" ?>+6,w:100%-120,h:24],{},"foo bar baz foo bar")
+#txt[%T_ROOM](%B[x:105,y:%<? player.account ? "L_ACCOUNT" : "L_CTIME" ?>+6,w:100%-120,h:24],{},<? room.title | arg ?>)
 #btn(%B[x:105,y:%T_ROOM,w:44,h:28],{GW|open&join_game.dcml&ASTATE=<%ASTATE>^VE_RID=<? room.id ?>^BACKTO=user_details},"join")
 #btn(%B[x:105+44+2,y:%T_ROOM,w:44,h:28],{GW|open&room_info_dgl.dcml&ASTATE=<%ASTATE>^VE_RID=<? room.id ?>^BACKTO=user_details},"info")
 <? END ?>
