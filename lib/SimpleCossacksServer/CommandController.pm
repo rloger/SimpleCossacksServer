@@ -3,6 +3,7 @@ use Mouse;
 BEGIN { extends 'GSC::Server::CommandController' }
 use SimpleCossacksServer::CommandController::Open;
 use String::Escape();
+use JSON();
 
 sub login : Command {
   my($self, $h, $lgdta) = @_;
@@ -85,7 +86,7 @@ sub leave : Command {
 }
 
 sub start : Command {
-  my($self, $h) = @_;
+  my($self, $h, $sav, $map, $players_count, @players_list) = @_;
   my $room = $h->server->start_room( $h->connection->data->{id} );
   if($room) {
     if($room->{host_id} == $h->connection->data->{id}) {
@@ -97,6 +98,44 @@ sub start : Command {
      $h->log->info($h->connection->log_message . " " . $h->req->ver . " #start game ?unknown?");
      $h->log->warn($h->connection->log_message . " have not game for start"); 
   }
+  if($h->connection->data->{account}) {
+    s/\0$// for $sav, $map, $players_count, @players_list;
+    $_ = int($_) for $players_count, @players_list;
+    my $post_room;
+    if($room) {
+      my @fields = qw<id title max_players players_count level ctime>;
+      @$post_room{@fields} = @$room{@fields};
+      $_ = int($_) for @$post_room{qw<id max_players players_count level ctime>};
+    } else {
+      $post_room = { id => $room->{id}, lost => JSON::true };
+    }
+
+    $post_room->{map} = $map;
+    $post_room->{save_from} = int($1) if $sav && $sav =~ /^sav:\[(\d+)\]$/;
+
+    my $i = 0;
+    while(@players_list && $i < $players_count) {
+      my($player_id, $nation, $theam, $color) = splice(@players_list, 0, 4);
+      $player_id = unpack 'L', pack 'l', $player_id;
+      my $post_player;
+      if(my $player = $h->server->data->{players}{$player_id}) {
+        my @fields = qw<id nick connected_at>;
+        @$post_player{@fields} = @$player{@fields};
+        $_ = int($_) for @$post_player{qw<id connected_at>};
+        if($player->{account}) {
+          my @fields = qw<type profile id>;
+          @{$post_player->{account}}{@fields} = @{$player->{account}}{@fields};
+        }
+      } else {
+        my $post_player = { id => $player_id, lost => JSON::true };
+      }
+      @$post_player{qw<nation theam color>} = ($nation, $theam, $color);
+      push @{$post_room->{players}}, $post_player;
+      $i++;
+    }
+
+    $h->server->post_account_action($h, 'start', $post_room);
+  }
 }
 
 sub endgame : Command {
@@ -105,7 +144,7 @@ sub endgame : Command {
     $player_id = unpack 'L', pack 'l', $player_id;
     my $id = $h->connection->data->{id};
     my $short_player_id = $player_id - 0x7FFFFFFF + 1;
-    my $nick_name = ($h->server->data->{nicks}{$player_id} // '.') . ":$short_player_id";
+    my $nick_name = ($h->server->data->{players}{$player_id} ? $h->server->data->{players}{$player_id}{nick} : '.') . ":$short_player_id";
     my $result_str = $result == 1 ? 'loose' :
         $result == 2 ? 'win' :
         $result == 5 ? 'disconnect' :
@@ -171,6 +210,11 @@ sub not_alive {
       $h->log->info($connection->log_message . " " . $h->req->ver . " #not alive in room $room->{id} $room->{title}");      
     }
   }
+}
+
+sub url :Command {
+  my($self, $h, $url) = @_;
+  $h->push_command(LW_time => 0, "open:$url");
 }
 
 __PACKAGE__->meta->make_immutable();

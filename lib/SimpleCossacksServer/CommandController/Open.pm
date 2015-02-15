@@ -1,5 +1,9 @@
 package SimpleCossacksServer::CommandController::Open;
 use Mouse;
+use Coro::LWP;
+use LWP;
+use JSON;
+use String::Escape();
 
 my @PUBLIC = qw[
   enter try_enter startup games new_room_dgl reg_new_room 
@@ -15,37 +19,131 @@ sub public {
 }
 
 sub enter {
-  my($self, $h, $url, $p) = @_;
-  $h->show('enter.cml');
+  my($self, $h, $p) = @_;
+  if($h->connection->data->{account}) {
+    my $type = $h->connection->data->{account}{type}; 
+    my $nick = $h->connection->data->{account}{login};
+    my $id = $h->connection->data->{account}{id};
+    $h->show('enter.cml', { type => $type, nick => $nick, id => $id, logged_in => 1 });
+  } else {
+    my $type = $p->{TYPE} if $p->{TYPE} && ($p->{TYPE} eq 'LCN' || $p->{TYPE} eq 'WCL');
+    $h->show('enter.cml', { type => $type });
+  }
 }
 
+my $ua = LWP::UserAgent->new(agent => 'cossacks-server.net bot');
 sub try_enter {
   my($self, $h, $p) = @_;
   my $nick = $p->{NICK};
-  if(!defined($nick) || $nick eq '') {
-    $h->show('error_enter.cml', { error_text => 'Enter nick' });
-  } elsif($nick !~ /^[\[\]_\w-]+$/) {
-    $h->show('error_enter.cml', { error_text => 'Bad character in nick. Nick can contain only a-z,A-Z,0-9,[]_-' });
-  } elsif($nick =~ /^([0-9-])/) {
-    $h->show('error_enter.cml', { error_text => "Bad character in nick. Nick can't start with " . ($1 eq '-' ? '-' : 'numerical digit') });
-  } else {
-    my $g = $h->server->data;
-    my $id;
-    unless($h->connection->data->{id}) {
-      if(@{$g->{ids}}) {
-        push @{$g->{ids}}, $id = $g->{ids}->[-1] + 1;
-      } else {
-        push @{$g->{ids}}, $id = 0x7FFFFFFF;
-      }
-      $h->connection->data->{id} = $id;
+  my $type = $p->{TYPE} // '';
+  if($p->{RESET}) {
+    my $account_data = $h->connection->data->{account};
+    $h->log->info(
+      $h->connection->log_message . " " . $h->req->ver . " #logout from " . lc($account_data->{type}) . " account "
+      . String::Escape::printable("$account_data->{id} $account_data->{login}")
+    );
+    $h->connection->data->{account} = undef;
+    $h->show('enter.cml');
+  } elsif($p->{LOGGED_IN}) {
+    if($h->connection->data->{account}) {
+      $nick = $h->connection->data->{account}{login};
+      $nick =~ s/[^\[\]\w-]+//g;
+      $h->server->post_account_action($h, 'enter');
+      $self->_success_enter($h, $nick);
     } else {
-      $id = $h->connection->data->{id};
+      $h->show('enter.cml');
     }
-    $h->connection->data->{nick} = $nick;
-    $h->log->info($h->connection->log_message . " " . $h->req->ver . " #enter");
-    $g->{nicks}{$id} = $nick;
-    $h->show('ok_enter.cml', { P => $p, id => $id});
+  } elsif($type eq 'LCN' || $type eq 'WCL') {
+    my $host = $h->server->config->{lc($type) . "_host"};
+    my $server_name = $h->server->config->{lc($type) . "_server_name"} // $host;
+    my $key = $type eq 'LCN' ? $h->server->config->{lcn_key} : $h->server->config->{wcl_key};
+    my $password = $p->{PASSWORD};
+    if(!defined($nick) || $nick eq '') {
+      $h->show('enter.cml', { error => 'enter nick', type => $type });
+    } elsif(!defined($nick) || $nick eq '') {
+      $h->show('enter.cml', { error => 'enter password', type => $type });
+    } else {
+      my $url = "http://$host/api/server.php";
+      my $response = $ua->post($url, { 
+        action => 'logon',
+        key => $key,
+        login => $nick,
+        password => $password,
+      }, X_Client_IP => $h->connection->ip ); 
+
+      unless($response->is_success) {
+        $h->log->error("bad response from $url : " . $response->status_line);
+        $h->show('enter.cml', { error => "problem with $server_name server", type => $type });
+        return;
+      }
+
+      my $result = eval { JSON::from_json($response->decoded_content) } or do {
+        $h->log->error("bad json from $url");
+        $h->show('enter.cml', { error => "problem with $server_name server", type => $type });
+        return;
+      };
+
+      unless($result->{success}) {
+        $h->show('enter.cml', { error => 'incorrect login or password', type => $type });
+        $h->log->info($h->connection->log_message . " " . $h->req->ver . " #authenticate unsuccessfull with " . lc($type) . " login " . String::Escape::printable($nick));
+      } else {
+        my $account_data = {
+          login => $nick,
+          id => $result->{id},
+          profile => $result->{profile},
+          type => $type,
+        };
+        $account_data->{profile} = $result->{profile} if defined $result->{profile} && $result->{profile} =~ m{^https?://};
+        $h->connection->data->{account} = $account_data;
+        $nick =~ s/[^\[\]\w-]+//g;
+        $h->log->info(
+          $h->connection->log_message . " " . $h->req->ver . " #authenticate successfull with " . lc($type)
+          . " account " . String::Escape::printable("$account_data->{id} $account_data->{login}")
+        );
+        $self->_success_enter($h, $nick);
+      }
+    }
+  } else {
+    if(!defined($nick) || $nick eq '') {
+      $h->show('error_enter.cml', { error_text => 'Enter nick' });
+    } elsif($nick !~ /^[\[\]_\w-]+$/) {
+      $h->show('error_enter.cml', { error_text => 'Bad character in nick. Nick can contain only a-z,A-Z,0-9,[]_-' });
+    } elsif($nick =~ /^([0-9-])/) {
+      $h->show('error_enter.cml', { error_text => "Bad character in nick. Nick can't start with " . ($1 eq '-' ? '-' : 'numerical digit') });
+    } else {
+      $self->_success_enter($h, $nick);
+    }
   }
+}
+
+sub _success_enter {
+  my($self, $h, $nick) = @_;
+  my $g = $h->server->data;
+  my $id;
+  unless($h->connection->data->{id}) {
+    if(@{$g->{ids}}) {
+      push @{$g->{ids}}, $id = $g->{ids}->[-1] + 1;
+    } else {
+      push @{$g->{ids}}, $id = 0x7FFFFFFF;
+    }
+    $h->connection->data->{id} = $id;
+  } else {
+    $id = $h->connection->data->{id};
+  }
+  $h->connection->data->{nick} = $nick;
+  my $account_data = $h->connection->data->{account};
+  $h->log->info(
+    $h->connection->log_message . " " . $h->req->ver . " #enter" 
+    . ( $account_data ?
+      " with " . lc($account_data->{type}) . " account " . String::Escape::printable("$account_data->{id} $account_data->{login}")
+      : ""
+    )
+  );
+  $g->{players}{$id}{nick} = $nick;
+  $g->{players}{$id}{account} = $account_data;
+  $g->{players}{$id}{connected_at} = $h->connection->ctime;
+  $g->{players}{$id}{id} = $id;
+  $h->show('ok_enter.cml', { nick => $nick, id => $id});
 }
 
 sub startup {
@@ -86,7 +184,7 @@ sub reg_new_room {
     my $rooms = ( $h->server->data->{dbtbl}{ "ROOMS_V" . $h->req->ver } //= [] );
     $h->server->data->{last_room} ||= 1;
     my $room_id = ++$h->server->data->{last_room};
-    my $level = $p->{VE_LEVEL} == 3 ? 'Hard' : $p->{VE_LEVEL} == 2 ? 'Normal' : $p->{VE_LEVEL} == 1 ? 'Easy' : '';
+    my $level = $p->{VE_LEVEL} == 3 ? 'Hard' : $p->{VE_LEVEL} == 2 ? 'Normal' : $p->{VE_LEVEL} == 1 ? 'Easy' : 'For all';
     my $row = [ $room_id, $p->{VE_TITLE}, $h->connection->data->{nick}, ($h->is_american_conquest ? $p->{VE_TYPE} : ()), $level, "1/".($p->{VE_MAX_PL}+2), $h->req->ver, $h->connection->int_ip ];
     my $ctlsum = $h->server->_room_control_sum($row);
     my $room = {
@@ -130,7 +228,11 @@ sub room_info_dgl {
     $self->_error($h, "The room is closed");
     return;
   }
-  $h->show('room_info_dgl.cml', { room => $room, room_time => $self->_time_interval($room->{ctime}) });
+  my $backto;
+  if($p->{BACKTO} && $p->{BACKTO} eq 'user_details') {
+    $backto = 'open&user_details.dcml&ID=' . $h->connection->data->{id}; 
+  }
+  $h->show('room_info_dgl.cml', { room => $room, room_time => $self->_time_interval($room->{ctime}), backto => $backto });
 }
 
 sub _time_interval {
@@ -206,10 +308,19 @@ sub _join_to_room {
 
 sub user_details {
   my($self, $h, $p) = @_;
-  if($p->{ID} >= 0x7FFFFFFF) {
-    $self->_alert($h, "Player Server", "This is cossacs-server.net player")
-  } else {
-    $self->_alert($h, "Player Server", "This is gsc game server player")
+  my($id) = ($p->{ID} =~ /(\d+)/);
+  if($h->is_american_conquest) {
+    if($p->{ID} >= 0x7FFFFFFF) {
+      $self->_alert($h, "Player Server", "This is cossacs-server.net player")
+    } else {
+      $self->_alert($h, "Player Server", "This is gsc game server player")
+    }
+  } elsif(my $player = $h->server->data->{players}{$id}) {
+    $h->show('user_details.cml', {
+      player => $player,
+      connection_time => $self->_time_interval($player->{connected_at}),
+      room => $h->server->data->{rooms_by_player}{ $id },
+    }); 
   }
 }
 

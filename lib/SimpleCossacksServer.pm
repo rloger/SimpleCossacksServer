@@ -8,6 +8,8 @@ use SimpleCossacksServer::Connection;
 use Template;
 use Config::Simple;
 use POSIX();
+use JSON();
+use AnyEvent::HTTP();
 extends 'GSC::Server';
 has template_engine => (is => 'rw');
 has config_file => (is => 'ro');
@@ -203,6 +205,41 @@ sub start_room {
     }
   }
   return $room;
+}
+
+sub post_account_action {
+  my($self, $h, $action, $data, $time) = @_;
+  $h->log->error('no $action') and return unless $action;
+  if(my $account_data = $h->connection->data->{account}) {
+    my $host = $h->server->config->{lc($account_data->{type}) . "_host"};
+    my %params;
+    $params{time} = $time // time; 
+    $params{action} = $action;
+    $params{data} = $data if defined $data;
+    $params{key} = $h->server->config->{lc($account_data->{type}) . "_key"};
+    $params{account_id} = $account_data->{id};
+    my $body = '';
+    my $i;
+    for my $name (keys %params) {
+      $body .= ($i ? "&" : "" ) . "$name=" . ( ref($params{$name}) ? JSON::to_json($params{$name}) : $params{$name} );
+      $i++
+    }
+    my $url = "http://$host/api/server.php";
+    AnyEvent::HTTP::http_post $url, $body,
+      headers => {
+        "Content-Type" => "application/x-www-form-urlencoded",
+        "Content-Length" => length($body),
+        "UserAgent" => "cossacks-server.net bot",
+        "X-Client-IP" => $h->connection->ip,
+      },
+      sub {
+        my($data, $headers) = @_;
+        unless($headers->{Status} >= 200 && $headers->{Status} < 300) {
+          $h->log->warn("bad response from $url : " . $headers->{Status} . " " . $headers->{Reason});
+        } 
+      }
+    ;
+  }
 }
 
 __PACKAGE__->meta->make_immutable();

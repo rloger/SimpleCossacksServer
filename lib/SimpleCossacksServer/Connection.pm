@@ -3,6 +3,7 @@ use Mouse;
 extends 'GSC::Server::Connection';
 my $MAXID = 1;
 has id => (is => 'ro', default => sub { $MAXID++ });
+has ctime => (is => 'ro', default => sub { time });
 
 sub log_message {
   my($self) = @_;

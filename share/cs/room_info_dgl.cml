@@ -19,7 +19,7 @@
 #font(WF,YF,WF)
 #txt[%L_HOST](%L[x:20,y:%T_NAME+6,w:100,h:24],{},"Host")
 #font(YF,WF,WF)
-#txt[%T_HOST](%L[x:100,y:%T_NAME+6,w:100%-120,h:24],{},<? server.data.nicks.${room.host_id} | arg ?>)
+#txt[%T_HOST](%L[x:100,y:%T_NAME+6,w:100%-120,h:24],{},<? server.data.players.${room.host_id}.nick | arg ?>)
 
 //#font(WF,YF,WF)
 //#txt[%L_PING](%L[x:20,y:%T_HOST+6,w:100,h:24],{},"Ping")
@@ -33,7 +33,7 @@
 <?~ room.players_count _ "/" _ room.max_players ~?>
 <?~ FOREACH player_id IN room.players.nsort ~?>
 <?~ IF loop.first ?> <? ELSE ?>, <? END ~?>
-<?~ server.data.nicks.$player_id ~?>
+<?~ server.data.players.$player_id.nick ~?>
 <?~ END ~?>
 <? END ?>)
 
@@ -54,7 +54,7 @@
 #txt[%T_CTIME](%L[x:100,y:%T_LEVEL+6,w:100%-120,h:24],{},<? date.format(room.ctime, format => '%Y-%m-%d %H:%M:%S UTC', gmt => 1) _ " (" _ room_time _ " ago)" | arg ?>)
 
 <? IF room.passwd != '' ?>
-#font(WF,YF,WF)
+GW|#font(WF,YF,WF)
 #txt[%L_PASSWD](%L[x:20,y:%T_CTIME+6,w:100,h:24],{},"Password")
 #font(YF,WF,WF)
 #txt[%T_PASSWD](%L[x:100,y:%T_CTIME+6,w:100%-120,h:24],{},"yes")
@@ -64,5 +64,5 @@
 
 #sbtn[%B_RGST](%L[x:43,y:100%+5,w:100,h:24],{GW|open&join_game.dcml&ASTATE=<%ASTATE>^VE_RID=<? room.id | cmd ?>},"Join")
 
-#sbtn[%B_RGST](%L[x:230,y:100%+5,w:100,h:24],{LW_file&Internet/Cash/cancel.cml},"Cancel")
+#sbtn[%B_RGST](%L[x:230,y:100%+5,w:100,h:24],{<? IF backto ?>GW|<? backto ?><? ELSE ?>LW_file&Internet/Cash/cancel.cml<? END ?>},"Cancel")
 <NGDLG>

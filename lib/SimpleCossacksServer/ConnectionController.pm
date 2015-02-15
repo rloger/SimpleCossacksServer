@@ -18,7 +18,7 @@ sub _close {
         last;
       }
     }
-    delete $h->server->data->{nicks}{$id};
+    delete $h->server->data->{players}{$id};
   }
   $h->log->info($h->connection->log_message . ' #disconnect');
 }
