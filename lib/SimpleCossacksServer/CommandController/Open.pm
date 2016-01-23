@@ -96,6 +96,7 @@ sub try_enter {
         $account_data->{profile} = $result->{profile} if defined $result->{profile} && $result->{profile} =~ m{^https?://};
         $h->connection->data->{account} = $account_data;
         $nick =~ s/[^\[\]\w-]+//g;
+        $nick =~ s/^(?=\d)/_/;
         $h->log->info(
           $h->connection->log_message . " " . $h->req->ver . " #authenticate successfull with " . lc($type)
           . " account " . String::Escape::printable("$account_data->{id} $account_data->{login}")
