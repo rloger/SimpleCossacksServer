@@ -32,7 +32,7 @@
 #cbb[%E_LEVEL](%L[x:130,y:121,w:100%-150,h:24],{%GV_VE_LEVEL},--,Easy,Normal,Hard,0)
 
 #font(SYF,SWF,SWF)
-#txt(%L[x:20,y:146,w:100%,h:24],{},"NOTE: You shall have the WHITE ip address to create server")
+#txt(%L[x:20,y:146,w:100%,h:24],{},"NOTE: You shall have a PUBLIC ip address to create server")
 
 #font(YF,WF,YF)
 
