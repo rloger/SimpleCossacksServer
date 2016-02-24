@@ -55,9 +55,8 @@ sub GETTBL : Command {
 sub alive : Command {
   my($self, $h) = @_;
   my $id = $h->connection->data->{id} or return;
-  my $connection = $h->connection;
   $h->server->data->{alive_timers}{ $id } = AnyEvent->timer( after => 150, cb => sub {
-    $self->not_alive($h, $connection);
+    $self->not_alive($h, $id);
   } );
 }
 
@@ -98,7 +97,14 @@ sub start : Command {
      $h->log->info($h->connection->log_message . " " . $h->req->ver . " #start game ?unknown?");
      $h->log->warn($h->connection->log_message . " have not game for start"); 
   }
-  if($h->connection->data->{account}) {
+  if($room) { # установка таймаутов
+    for my $player_id (keys %{$room->{players}}) {
+      $h->server->data->{alive_timers}{ $player_id } = AnyEvent->timer( after => 150, cb => sub {
+        $self->not_alive($h, $player_id);
+      } );
+    }
+  }
+  if($h->connection->data->{account}) { # отправка статы в wcl/lcn аккаунт
     s/\0$// for $sav, $map, $players_count, @players_list;
     $_ = int($_) for $players_count, @players_list;
     my $post_room;
@@ -199,16 +205,12 @@ sub _before {
 }
 
 sub not_alive {
-  my($self, $h, $connection) = @_;
-  my $id = $connection->data->{id};
+  my($self, $h, $id) = @_;
+  my $connection = $h->server->connection_class->connection_by_pid($id);
   delete $h->server->data->{alive_timers}{ $id };
   my $room = $h->server->leave_room( $id );
-  if($room) {
-    if($room->{host_id} == $id) {
-      $h->log->info($connection->log_message . " " . $h->req->ver . " #not alive in his room $room->{id} $room->{title}");
-    } else {
-      $h->log->info($connection->log_message . " " . $h->req->ver . " #not alive in room $room->{id} $room->{title}");      
-    }
+  if($room && $connection) {
+    $h->log->info($connection->log_message . " " . $h->req->ver . " #not alive in" . ($room->{host_id} == $id ? " his" : "") . " room $room->{id} $room->{title}"); 
   }
 }
 

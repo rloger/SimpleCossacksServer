@@ -128,6 +128,7 @@ sub _success_enter {
       push @{$g->{ids}}, $id = 0x7FFFFFFF;
     }
     $h->connection->data->{id} = $id;
+    $h->connection->connection_by_pid($id => $h->connection);
   } else {
     $id = $h->connection->data->{id};
   }
@@ -209,9 +210,8 @@ sub reg_new_room {
     $h->server->data->{rooms_by_ctlsum}->{ $room->{ctlsum} }  = $room;
     $h->server->data->{rooms_by_player}->{ $room->{host_id} } = $room;
     $h->server->data->{rooms_by_id}->{ $room->{id} }          = $room;
-    my $connection = $h->connection;
     $h->server->data->{alive_timers}{ $player_id } = AnyEvent->timer( after => 150, cb => sub {
-      $h->server->command_controller($h)->not_alive($h, $connection);
+      $h->server->command_controller($h)->not_alive($h, $player_id);
     } );
     $h->log->info($h->connection->log_message . " " . $h->req->ver . " #create room $room->{id} $room->{title}" );
     $h->show('reg_new_room.cml', { id => ($p->{VE_TYPE} ? "HB" : "") . $room_id, name => $room->{title}, max_pl => $room->{max_players} });

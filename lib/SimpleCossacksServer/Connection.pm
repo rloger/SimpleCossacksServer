@@ -1,5 +1,6 @@
 package SimpleCossacksServer::Connection;
 use Mouse;
+use Scalar::Util;
 extends 'GSC::Server::Connection';
 my $MAXID = 1;
 has id => (is => 'ro', default => sub { $MAXID++ });
@@ -16,6 +17,23 @@ sub log_message {
     $message .= "."
   }
   return $message;
+}
+
+my %CONNECTION_BY_PID;
+sub connection_by_pid {
+  my($class, $pid, $connection) = @_;
+  if(@_ > 2) {
+    $CONNECTION_BY_PID{$pid} = $connection;
+    Scalar::Util::weaken($CONNECTION_BY_PID{$pid});
+    return $CONNECTION_BY_PID{$pid};
+  } else {
+    return $CONNECTION_BY_PID{$pid};
+  }
+}
+
+sub DEMOLISH {
+  my($self) = @_;
+  delete $CONNECTION_BY_PID{$self->data->{id}} if $self->data->{id};
 }
 
 __PACKAGE__->meta->make_immutable();
