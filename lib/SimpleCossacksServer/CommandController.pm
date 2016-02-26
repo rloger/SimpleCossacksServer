@@ -196,9 +196,14 @@ sub _before {
     $message .= ",tail=$tail" if defined($tail) && length($tail) > 0;
     $message .= " " . join " ", map { '"' . String::Escape::printable($_) . '"' } @$args[1..$#$args] if $#$args >= 1;
   } elsif($cmd eq 'GETTBL') {
+    my $gettbl_log_interval = $h->server->config->{gettbl_log_interval} || 1;
+    return if $h->connection->data->{gettbl_count}++ % $gettbl_log_interval;
     $message .= " -$cmd " . join " ", map { '"' . String::Escape::printable($_) . '"' } @$args[0..1];
     $message .= ' rows=' . (join ':', map {sprintf "%08X", $_} unpack 'L*', $args->[2]);
     $message .= " " . join " ", map { '"' . String::Escape::printable($_) . '"' } @$args[3..$#$args] if $#$args >= 3;
+    if($gettbl_log_interval != 1) {
+      $message .= " #1/$gettbl_log_interval";
+    }
   } else {
     $message .= " -$cmd " . join " ", map { '"' . String::Escape::printable($_) . '"' } @$args;
   }
