@@ -10,6 +10,9 @@
 #ebox[%E](x:180,y:24,w:100%-380,h:30)
 #pan[%MPN](%L[x:0,y:0,w:100%,h:100%],8)
 #ctxt[%TIT](%E[x:0,y:12,w:100%,h:10],{},"Game info")
+<? IF h.connection.data.dev ?>
+#rtxt(%E[x:320,y:12,w:50,h:10],{},<? "#" _ room.id | arg ?>)
+<? END ?>
 
 #font(WF,YF,WF)
 #txt[%L_NAME](%L[x:20,y:44,w:100,h:24],{},"Game title")
