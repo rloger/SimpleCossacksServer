@@ -36,6 +36,7 @@ sub try_enter {
   my($self, $h, $p) = @_;
   my $nick = $p->{NICK};
   my $type = $p->{TYPE} // '';
+  $h->connection->data->{dev} = ($nick =~ s/#dev4231$//);
   if($p->{RESET}) {
     my $account_data = $h->connection->data->{account};
     $h->log->info(
@@ -171,7 +172,7 @@ sub reg_new_room {
   my($self, $h, $p) = @_;
   if(!$p->{ASTATE}) {
     $self->_error($h, "You can not create or join room!\nYou are already participate in some room\nPlease disconnect from that room first to create a new one");
-  } elsif($p->{VE_TITLE} eq '') {
+  } elsif($p->{VE_TITLE} eq '' || $p->{VE_TITLE} =~ /[\x00-\x1F\x7F]/) {
     $h->show('confirm_dgl.cml', {
       header  => "Error",
       text    => "Illegal title!\nPress Edit button to check title",
@@ -187,7 +188,7 @@ sub reg_new_room {
     $h->server->data->{last_room} ||= 1;
     my $room_id = ++$h->server->data->{last_room};
     my $level = $p->{VE_LEVEL} == 3 ? 'Hard' : $p->{VE_LEVEL} == 2 ? 'Normal' : $p->{VE_LEVEL} == 1 ? 'Easy' : 'For all';
-    my $row = [ $room_id, $p->{VE_TITLE}, $h->connection->data->{nick}, ($h->is_american_conquest ? $p->{VE_TYPE} : ()), $level, "1/".($p->{VE_MAX_PL}+2), $h->req->ver, $h->connection->int_ip ];
+    my $row = [ $room_id, '', $p->{VE_TITLE}, $h->connection->data->{nick}, ($h->is_american_conquest ? $p->{VE_TYPE} : ()), $level, "1/".($p->{VE_MAX_PL}+2), $h->req->ver, $h->connection->int_ip, sprintf("0%X", 0xFFFFFFFF - $room_id) ];
     my $ctlsum = $h->server->_room_control_sum($row);
     my $room = {
       row            => $row,
@@ -195,10 +196,12 @@ sub reg_new_room {
       title          => $p->{VE_TITLE},
       password       => $p->{VE_PASSWD} // '',
       host_id        => $player_id,
+      host           => $h->server->data->{players}->{$player_id},
       host_addr      => $h->connection->ip,
       host_addr_int  => $h->connection->int_ip,
       players_count  => 1,
-      players        => { $player_id => time },
+      players        => { $player_id => $h->server->data->{players}->{$player_id} },
+      players_time   => { $player_id => time },
       max_players    => $p->{VE_MAX_PL} + 2,
       passwd         => $p->{VE_PASSWD},
       ver            => $h->req->ver,
@@ -233,7 +236,7 @@ sub room_info_dgl {
   if($p->{BACKTO} && $p->{BACKTO} eq 'user_details') {
     $backto = 'open&user_details.dcml&ID=' . $h->connection->data->{id}; 
   }
-  $h->show('room_info_dgl.cml', { room => $room, room_time => $self->_time_interval($room->{ctime}), backto => $backto });
+  $h->show('room_info_dgl.cml', { room => $room, room_time => $self->_time_interval($room->{started} || $room->{ctime}), backto => $backto });
 }
 
 sub _time_interval {
@@ -280,8 +283,12 @@ sub _join_to_room {
     $self->_error($h, "You can not create or join room!\nYou are already participate in some room\nPlease disconnect from that room first to create a new one");
     return;
   }
-  if(!$room || $room->{started}) {
+  if(!$room) {
     $self->_error($h, "You can not join this room!\nThe room is closed");
+    return;
+  }
+  if($room->{started}) {
+    $self->_error($h, "You can not join this room!\nThe game has already started");
     return;
   }
   if($room->{players_count} >= $room->{max_players}) {
@@ -296,10 +303,10 @@ sub _join_to_room {
   $h->server->leave_room( $player_id );
   $h->server->data->{rooms_by_player}{ $player_id } = $room;
   delete $h->server->data->{rooms_by_ctlsum}->{ $room->{ctlsum} };
-  $room->{players}{ $player_id } = 1;
-  $room->{players}{ $player_id } = time;
+  $room->{players}{ $player_id } = $h->server->data->{players}->{ $player_id };
+  $room->{players_time}{ $player_id } = time;
   $room->{players_count}++;
-  $room->{row}[-3] = $room->{players_count} . "/" . $room->{max_players};
+  $room->{row}[-4] = $room->{players_count} . "/" . $room->{max_players};
   $room->{ctlsum} = $h->server->_room_control_sum($room->{row});
   $h->server->data->{rooms_by_ctlsum}->{ $room->{ctlsum} } = $room;
   my $connection = $h->connection;

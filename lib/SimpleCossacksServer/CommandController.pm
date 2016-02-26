@@ -40,9 +40,11 @@ sub GETTBL : Command {
   my(@dtbl, @tbl);
   my $rooms = $h->server->data->{dbtbl}{$name};
   my $rooms_by_ctlsum = $h->server->data->{rooms_by_ctlsum};
+  my $hide_started = !$h->connection->data->{dev};
   for my $sum (@rows_ctl_sum) {
-    push @dtbl, $sum unless $rooms_by_ctlsum->{$sum};
+    push @dtbl, $sum if !$rooms_by_ctlsum->{$sum} || $hide_started && $rooms_by_ctlsum->{$sum}->{started};
   }
+  $rooms = [grep {!$_->{started}} @$rooms] if $hide_started;
   for my $room (@$rooms) {
     unless($rows_ctl_sum{ $room->{ctlsum} }) {
       push @tbl, $room->{row};

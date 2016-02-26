@@ -169,9 +169,10 @@ sub leave_room {
   
   delete $self->data->{rooms_by_player}{ $player_id };
   delete $room->{players}{ $player_id };
+  delete $room->{players_time}{ $player_id };
   my $in_ctrl_sum = delete $self->data->{rooms_by_ctlsum}->{ $room->{ctlsum} };
   $room->{players_count}--;
-  $room->{row}[-3] = $room->{players_count} . "/" . $room->{max_players};
+  $room->{row}[-4] = $room->{players_count} . "/" . $room->{max_players};
   $room->{ctlsum} = $self->_room_control_sum($room->{row});
 
   if($room->{started} ? $room->{players_count} <= 0 : $room->{host_id} == $player_id) {
@@ -195,14 +196,11 @@ sub start_room {
   
   if($room->{host_id} == $player_id) {
     delete $self->data->{rooms_by_ctlsum}{ $room->{ctlsum} };
-    $room->{started} = 1;
-    my $rooms_list = $self->data->{dbtbl}{ "ROOMS_V" . $room->{ver} };
-    for(my $i = 0; $i < @$rooms_list; $i++) {
-      if($rooms_list->[$i]{id} == $room->{id}) {
-        splice @$rooms_list, $i, 1;
-        last;
-      } 
-    }
+    $room->{row}[1] = "\x{7F}0018";
+    substr($room->{row}[-1], 0, 1) = '1';
+    $room->{started} = time;
+    $room->{ctlsum} = $self->_room_control_sum($room->{row});
+    $self->data->{rooms_by_ctlsum}->{ $room->{ctlsum} } = $room;
   }
   return $room;
 }
