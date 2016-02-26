@@ -188,13 +188,12 @@ sub _before {
     $message .= uc unpack 'H*', $args->[0];
     $message .= " " . join " ", map { '"' . String::Escape::printable($_) . '"' } @$args[1..$#$args] if $#$args >= 1;
   } elsif($cmd eq 'stats') { 
-    my @all = unpack "C S H14 SSLLLLLLSSH*", $args->[0];
+    my @all = unpack "LCLC SSLLLLLLSSH*", $args->[0];
     $_ //= '' for @all;
-    my($u1, $n, $u2, $sc, $pp, $w, $g, $s, $f, $i, $c, $p, $u, $tail) = @all;
-    $message .= " -$cmd ";
-    $message .= " u1=$u1,u2=$u2,n=$n,sc=$sc,pp=$pp,w=$w,g=$g,s=$s,f=$f,i=$i,c=$c,p=$p,u=$u";
+    my($t, $pc, $id, $st, $sc, $pp, $w, $g, $s, $f, $i, $c, $p, $u, $tail) = @all;
+    $message .= " -$cmd";
+    $message .= " t=$t,pc=$pc,id=$id,st=$st,sc=$sc,pp=$pp,w=$w,g=$g,s=$s,f=$f,i=$i,c=$c,p=$p,u=$u";
     $message .= ",tail=$tail" if defined($tail) && length($tail) > 0;
-    #$message .= " " . uc unpack 'H*', $args->[0];
     $message .= " " . join " ", map { '"' . String::Escape::printable($_) . '"' } @$args[1..$#$args] if $#$args >= 1;
   } elsif($cmd eq 'GETTBL') {
     $message .= " -$cmd " . join " ", map { '"' . String::Escape::printable($_) . '"' } @$args[0..1];
