@@ -33,19 +33,38 @@
 #txt[%L_PLAYERS](%L[x:20,y:%T_HOST+6,w:100,h:24],{},"Players")
 #font(YF,BF,BF)
 #txt[%T_PLAYERS](%L[x:100,y:%T_HOST+6,w:100%-120,h:24],{},<? FILTER arg ~?>
-<?~ (room.start_players_count || room.players_count)_ "/" _ room.max_players ~?>
+<?~ IF !room.started ~?><?~ (room.start_players_count || room.players_count)_ "/" _ room.max_players ~?><? END ?>
 <?~ FOREACH player_id IN room.players_time.nsort ~?>
-<?~ IF loop.first ?> <? ELSE ?>, <? END ~?>
-<?~ room.players.$player_id.exited ? '{' _ room.players.$player_id.nick _ '}' : room.players.$player_id.nick ~?>
+<?~ IF room.players.$player_id.exited ~?>
+  <?~ SET has_exited_players = 1 ~?>
+<?~ ELSE ~?>
+  <?~ IF !continue_players; SET continue_players = 1 ?> <? ELSE ?>, <? END ~?>
+  <?~ room.players.$player_id.nick ~?>
+<?~ END ~?>
 <?~ END ~?>
 <?~ IF room.ai ?> + AI<? END ~?>
 <?~ END ~?>
 )
 
+<? IF has_exited_players ~?>
 #font(WF,YF,WF)
-#txt[%L_LEVEL](%L[x:20,y:%T_PLAYERS+6,w:100,h:24],{},"Level")
+#txt[%L_EXPLAYERS](%L[x:20,y:%T_PLAYERS+6,w:100,h:24],{},"Exited")
+#font(YF,BF,BF)
+#txt[%T_EXPLAYERS](%L[x:100,y:%T_PLAYERS+6,w:100%-120,h:24],{},<? FILTER arg ~?>
+<?~ FOREACH player_id IN room.players_time.nsort ~?>
+<?~ IF room.players.$player_id.exited ~?>
+  <?~ IF !continue_explayers; SET continue_explayers = 1 ?> <? ELSE ?>, <? END ~?>
+  <?~ room.players.$player_id.nick ~?>
+<?~ END ~?>
+<?~ END ~?>
+<?~ END ~?>
+)
+<? END ~?>
+
+#font(WF,YF,WF)
+#txt[%L_LEVEL](%L[x:20,y:%T_<? IF has_exited_players ?>EX<? END ?>PLAYERS+6,w:100,h:24],{},"Level")
 #font(YF,WF,WF)
-#txt[%T_LEVEL](%L[x:100,y:%T_PLAYERS+6,w:100%-120,h:24],{},<? 
+#txt[%T_LEVEL](%L[x:100,y:%T_<? IF has_exited_players ?>EX<? END ?>PLAYERS+6,w:100%-120,h:24],{},<? 
   room.level == 3 ? "Hard" :
   room.level == 2 ? "Normal" :
   room.level == 1 ? "Easy" :
