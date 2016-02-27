@@ -28,7 +28,7 @@ sub connection_class { 'SimpleCossacksServer::Connection' }
 sub init {
   my($self) = @_;
 
-  $self->data->{ids} = [];
+  $self->data->{last_player_id} = 0;
   $self->data->{dbtbl} = {};
   $self->data->{rooms_by_ctlsum} = {};
   $self->data->{rooms_by_player} = {};

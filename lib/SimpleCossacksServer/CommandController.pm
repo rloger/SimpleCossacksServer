@@ -151,8 +151,7 @@ sub endgame : Command {
     ($_) = /(-?\d+)/ for $game_id, $player_id, $result;
     $player_id = unpack 'L', pack 'l', $player_id;
     my $id = $h->connection->data->{id};
-    my $short_player_id = $player_id - 0x7FFFFFFF + 1;
-    my $nick_name = ($h->server->data->{players}{$player_id} ? $h->server->data->{players}{$player_id}{nick} : '.') . ":$short_player_id";
+    my $nick_name = ($h->server->data->{players}{$player_id} ? $h->server->data->{players}{$player_id}{nick} : '.') . ":$player_id";
     my $result_str = $result == 1 ? 'loose' :
         $result == 2 ? 'win' :
         $result == 5 ? 'disconnect' :

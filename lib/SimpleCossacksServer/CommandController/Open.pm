@@ -123,11 +123,7 @@ sub _success_enter {
   my $g = $h->server->data;
   my $id;
   unless($h->connection->data->{id}) {
-    if(@{$g->{ids}}) {
-      push @{$g->{ids}}, $id = $g->{ids}->[-1] + 1;
-    } else {
-      push @{$g->{ids}}, $id = 0x7FFFFFFF;
-    }
+    $id = ++$g->{last_player_id};
     $h->connection->data->{id} = $id;
     $h->connection->connection_by_pid($id => $h->connection);
   } else {
@@ -317,38 +313,29 @@ sub _join_to_room {
 sub user_details {
   my($self, $h, $p) = @_;
   my($id) = ($p->{ID} =~ /(\d+)/);
-  if($h->is_american_conquest) {
-    if($p->{ID} >= 0x7FFFFFFF) {
-      $self->_alert($h, "Player Server", "This is cossacs-server.net player")
-    } else {
-      $self->_alert($h, "Player Server", "This is gsc game server player")
-    }
-  } elsif(my $player = $h->server->data->{players}{$id}) {
+  if(my $player = $h->server->data->{players}{$id}) {
     $h->show('user_details.cml', {
       player => $player,
       connection_time => $self->_time_interval($player->{connected_at}),
       room => $h->server->data->{rooms_by_player}{ $id },
     }); 
+  } else {
+    $self->log->warn("There is no info about player $id");
   }
 }
 
 sub join_pl_cmd {
   my($self, $h, $p) = @_;
-  if($p->{VE_PLAYER} < 0x7FFFFFFF) {
-    $self->_error($h, "This is GSC game server player");
+  $h->push_empty, return if $h->connection->data->{id} && $h->server->data->{rooms_by_player}{ $h->connection->data->{id} };
+  my $room = $h->server->data->{rooms_by_player}{ $p->{VE_PLAYER} };
+  if(!$room) {
+    return;
+  } elsif($room->{started}) {
+     $self->_error($h, "Game alredy started"); 
     return;
   } else {
-    $h->push_empty, return if $h->connection->data->{id} && $h->server->data->{rooms_by_player}{ $h->connection->data->{id} };
-    my $room = $h->server->data->{rooms_by_player}{ $p->{VE_PLAYER} };
-    if(!$room) {
-      return;
-    } elsif($room->{started}) {
-       $self->_error($h, "Game alredy started"); 
-      return;
-    } else {
-      $self->room_info_dgl($h, { VE_RID => $room->{id} });
-      return;
-    }
+    $self->room_info_dgl($h, { VE_RID => $room->{id} });
+    return;
   }
 }
 

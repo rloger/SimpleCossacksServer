@@ -12,7 +12,7 @@ sub log_message {
   my $cd = $self->data;
   if($cd->{id} || $cd->{nick}) {
     $message .= "$cd->{nick}:";
-    $message .= $cd->{id} - 0x7FFFFFFF + 1 if $cd->{id};
+    $message .= $cd->{id} if $cd->{id};
   } else {
     $message .= "."
   }
