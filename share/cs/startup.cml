@@ -1,6 +1,8 @@
+<? SET bottom_height = 32 ~?>
+<? IF !h.connection.data.dev ~?>
 #lockresize
 #small
-<? SET bottom_height = 32 ?>
+<? END ~?>
 
 #font(YF,WF,WF)
 #box[%BOTTOM](x:0,w:100%,y:100%-<? bottom_height ?>,h:<? bottom_height ?>)
