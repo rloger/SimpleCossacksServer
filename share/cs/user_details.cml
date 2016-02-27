@@ -8,6 +8,9 @@
 #pan[%MPN](%B[x:0,y:0,w:100%,h:100%],8)
 #font(WF,WF,WF)
 #ctxt[%TIT](%B[x:0,y:6,w:100%,h:30],{},"Player Info")
+<? IF h.connection.data.dev ?>
+#rtxt(%B[x:280,y:6,w:70,h:30],{},<? "#" _ player.id | arg ?>)
+<? END ?>
 
 #font(WF,WF,WF)
 #txt[%L_NAME](%B[x:20,y:48,w:100%,h:100],{},"Nick")
