@@ -168,7 +168,7 @@ sub reg_new_room {
   my($self, $h, $p) = @_;
   if(!$p->{ASTATE}) {
     $self->_error($h, "You can not create or join room!\nYou are already participate in some room\nPlease disconnect from that room first to create a new one");
-  } elsif($p->{VE_TITLE} eq '' || $p->{VE_TITLE} =~ /[\x00-\x1F\x7F]/) {
+  } elsif($p->{VE_TITLE} eq '' || $p->{VE_TITLE} =~ /[\x00-\x1F\x7F]/ || $p->{VE_TITLE} =~ /^\s*$/) {
     $h->show('confirm_dgl.cml', {
       header  => "Error",
       text    => "Illegal title!\nPress Edit button to check title",
@@ -184,12 +184,14 @@ sub reg_new_room {
     $h->server->data->{last_room} ||= 1;
     my $room_id = ++$h->server->data->{last_room};
     my $level = $p->{VE_LEVEL} == 3 ? 'Hard' : $p->{VE_LEVEL} == 2 ? 'Normal' : $p->{VE_LEVEL} == 1 ? 'Easy' : 'For all';
-    my $row = [ $room_id, '', $p->{VE_TITLE}, $h->connection->data->{nick}, ($h->is_american_conquest ? $p->{VE_TYPE} : ()), $level, "1/".($p->{VE_MAX_PL}+2), $h->req->ver, $h->connection->int_ip, sprintf("0%X", 0xFFFFFFFF - $room_id) ];
+    my $title = $p->{VE_TITLE};
+    s/^\s+//, s/\s+$// for $title;
+    my $row = [ $room_id, '', $title, $h->connection->data->{nick}, ($h->is_american_conquest ? $p->{VE_TYPE} : ()), $level, "1/".($p->{VE_MAX_PL}+2), $h->req->ver, $h->connection->int_ip, sprintf("0%X", 0xFFFFFFFF - $room_id) ];
     my $ctlsum = $h->server->_room_control_sum($row);
     my $room = {
       row            => $row,
       id             => $room_id,
-      title          => $p->{VE_TITLE},
+      title          => $title,
       password       => $p->{VE_PASSWD} // '',
       host_id        => $player_id,
       host           => $h->server->data->{players}->{$player_id},
