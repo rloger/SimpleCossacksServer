@@ -168,6 +168,7 @@ sub leave_room {
   my $room = $self->data->{rooms_by_player}{$player_id} or return;
   
   delete $self->data->{rooms_by_player}{ $player_id };
+  $room->{players_count}--;
   if(!$room->{started}) {
     delete $room->{players}{ $player_id };
     delete $room->{players_time}{ $player_id };
@@ -175,7 +176,6 @@ sub leave_room {
   } else {
     $room->{players}{ $player_id }{exited} = 1;
   }
-  $room->{players_count}--;
   my $in_ctrl_sum = delete $self->data->{rooms_by_ctlsum}->{ $room->{ctlsum} };
   $room->{ctlsum} = $self->_room_control_sum($room->{row});
 
