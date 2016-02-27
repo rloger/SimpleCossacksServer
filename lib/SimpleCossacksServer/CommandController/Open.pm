@@ -128,6 +128,7 @@ sub _success_enter {
     $h->connection->connection_by_pid($id => $h->connection);
   } else {
     $id = $h->connection->data->{id};
+    $h->server->leave_room( $id );
   }
   $h->connection->data->{nick} = $nick;
   my $account_data = $h->connection->data->{account};
@@ -194,11 +195,10 @@ sub reg_new_room {
       title          => $title,
       password       => $p->{VE_PASSWD} // '',
       host_id        => $player_id,
-      host           => $h->server->data->{players}->{$player_id},
       host_addr      => $h->connection->ip,
       host_addr_int  => $h->connection->int_ip,
       players_count  => 1,
-      players        => { $player_id => $h->server->data->{players}->{$player_id} },
+      players        => { $player_id => { %{$h->server->data->{players}->{$player_id}} } },
       players_time   => { $player_id => time },
       max_players    => $p->{VE_MAX_PL} + 2,
       passwd         => $p->{VE_PASSWD},
@@ -301,7 +301,7 @@ sub _join_to_room {
   $h->server->leave_room( $player_id );
   $h->server->data->{rooms_by_player}{ $player_id } = $room;
   delete $h->server->data->{rooms_by_ctlsum}->{ $room->{ctlsum} };
-  $room->{players}{ $player_id } = $h->server->data->{players}->{ $player_id };
+  $room->{players}{ $player_id } = { %{$h->server->data->{players}->{ $player_id }} };
   $room->{players_time}{ $player_id } = time;
   $room->{players_count}++;
   $room->{row}[-4] = $room->{players_count} . "/" . $room->{max_players};

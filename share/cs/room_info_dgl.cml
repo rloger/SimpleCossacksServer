@@ -22,7 +22,7 @@
 #font(WF,YF,WF)
 #txt[%L_HOST](%L[x:20,y:%T_NAME+6,w:100,h:24],{},"Host")
 #font(YF,WF,WF)
-#txt[%T_HOST](%L[x:100,y:%T_NAME+6,w:100%-120,h:24],{},<? room.host.nick | arg ?>)
+#txt[%T_HOST](%L[x:100,y:%T_NAME+6,w:100%-120,h:24],{},<? room.players.${room.host_id}.nick | arg ?>)
 
 //#font(WF,YF,WF)
 //#txt[%L_PING](%L[x:20,y:%T_HOST+6,w:100,h:24],{},"Ping")
@@ -31,14 +31,16 @@
 
 #font(WF,YF,WF)
 #txt[%L_PLAYERS](%L[x:20,y:%T_HOST+6,w:100,h:24],{},"Players")
-#font(YF,WF,WF)
+#font(YF,BF,BF)
 #txt[%T_PLAYERS](%L[x:100,y:%T_HOST+6,w:100%-120,h:24],{},<? FILTER arg ~?>
-<?~ room.players_count _ "/" _ room.max_players ~?>
+<?~ (room.start_players_count || room.players_count)_ "/" _ room.max_players ~?>
 <?~ FOREACH player_id IN room.players_time.nsort ~?>
 <?~ IF loop.first ?> <? ELSE ?>, <? END ~?>
-<?~ room.players.$player_id.nick ~?>
+<?~ room.players.$player_id.exited ? '{' _ room.players.$player_id.nick _ '}' : room.players.$player_id.nick ~?>
 <?~ END ~?>
-<? END ?>)
+<?~ IF room.ai ?> + AI<? END ~?>
+<?~ END ~?>
+)
 
 #font(WF,YF,WF)
 #txt[%L_LEVEL](%L[x:20,y:%T_PLAYERS+6,w:100,h:24],{},"Level")

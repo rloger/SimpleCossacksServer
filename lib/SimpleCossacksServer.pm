@@ -168,11 +168,15 @@ sub leave_room {
   my $room = $self->data->{rooms_by_player}{$player_id} or return;
   
   delete $self->data->{rooms_by_player}{ $player_id };
-  delete $room->{players}{ $player_id };
-  delete $room->{players_time}{ $player_id };
-  my $in_ctrl_sum = delete $self->data->{rooms_by_ctlsum}->{ $room->{ctlsum} };
+  if(!$room->{started}) {
+    delete $room->{players}{ $player_id };
+    delete $room->{players_time}{ $player_id };
+    $room->{row}[-4] = $room->{players_count} . "/" . $room->{max_players};
+  } else {
+    $room->{players}{ $player_id }{exited} = 1;
+  }
   $room->{players_count}--;
-  $room->{row}[-4] = $room->{players_count} . "/" . $room->{max_players};
+  my $in_ctrl_sum = delete $self->data->{rooms_by_ctlsum}->{ $room->{ctlsum} };
   $room->{ctlsum} = $self->_room_control_sum($room->{row});
 
   if($room->{started} ? $room->{players_count} <= 0 : $room->{host_id} == $player_id) {
@@ -191,14 +195,16 @@ sub leave_room {
 }
 
 sub start_room {
-  my($self, $player_id) = @_;
+  my($self, $player_id, $params) = @_;
   my $room = $self->data->{rooms_by_player}{$player_id} or return;
   
   if($room->{host_id} == $player_id) {
     delete $self->data->{rooms_by_ctlsum}{ $room->{ctlsum} };
+    %$room = (%$room, %$params) if $params;
     $room->{row}[1] = "\x{7F}0018";
     substr($room->{row}[-1], 0, 1) = '1';
     $room->{started} = time;
+    $room->{start_players_count} = $room->{players_count};
     $room->{ctlsum} = $self->_room_control_sum($room->{row});
     $self->data->{rooms_by_ctlsum}->{ $room->{ctlsum} } = $room;
   }

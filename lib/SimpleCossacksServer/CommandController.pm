@@ -88,7 +88,7 @@ sub leave : Command {
 
 sub start : Command {
   my($self, $h, $sav, $map, $players_count, @players_list) = @_;
-  my $room = $h->server->start_room( $h->connection->data->{id} );
+  my $room = $h->server->start_room( $h->connection->data->{id}, { ai => ($sav =~ /<AI>/) } );
   if($room) {
     if($room->{host_id} == $h->connection->data->{id}) {
       $h->log->info($h->connection->log_message . " " . $h->req->ver . " #start his game $room->{id} $room->{title}");
