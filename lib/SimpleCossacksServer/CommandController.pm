@@ -40,7 +40,7 @@ sub GETTBL : Command {
   my(@dtbl, @tbl);
   my $rooms = $h->server->data->{dbtbl}{$name};
   my $rooms_by_ctlsum = $h->server->data->{rooms_by_ctlsum};
-  my $hide_started = !$h->connection->data->{dev};
+  my $hide_started = !$h->connection->data->{dev} && !$h->server->config->{show_started_rooms};
   for my $sum (@rows_ctl_sum) {
     push @dtbl, $sum if !$rooms_by_ctlsum->{$sum} || $hide_started && $rooms_by_ctlsum->{$sum}->{started};
   }
