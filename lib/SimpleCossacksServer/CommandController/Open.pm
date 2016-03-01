@@ -6,7 +6,7 @@ use JSON;
 use String::Escape();
 
 my @PUBLIC = qw[
-  enter try_enter startup resize games new_room_dgl reg_new_room
+  enter try_enter startup resize games rooms_table_dgl new_room_dgl reg_new_room
   join_game join_pl_cmd user_details users_list direct direct_ping 
   direct_join room_info_dgl
 ];
@@ -161,6 +161,11 @@ sub resize {
 sub games {
   my $self = shift;
   $self->startup(@_);
+}
+
+sub rooms_table_dgl {
+  my($self, $h, $p) = @_;
+  $h->show('rooms_table_dgl.cml');
 }
 
 sub new_room_dgl {
