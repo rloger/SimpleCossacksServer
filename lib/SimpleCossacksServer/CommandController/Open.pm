@@ -6,7 +6,7 @@ use JSON;
 use String::Escape();
 
 my @PUBLIC = qw[
-  enter try_enter startup games new_room_dgl reg_new_room 
+  enter try_enter startup resize games new_room_dgl reg_new_room
   join_game join_pl_cmd user_details users_list direct direct_ping 
   direct_join room_info_dgl
 ];
@@ -143,12 +143,19 @@ sub _success_enter {
   $g->{players}{$id}{account} = $account_data;
   $g->{players}{$id}{connected_at} = $h->connection->ctime;
   $g->{players}{$id}{id} = $id;
-  $h->show('ok_enter.cml', { nick => $nick, id => $id});
+  my $size = !$h->connection->data->{height} || $h->connection->data->{height} > int(314 + (419 - 314)/2) ? 'large' : 'small';
+  $h->show('ok_enter.cml', { nick => $nick, id => $id, window_size => $size });
 }
 
 sub startup {
   my($self, $h, $p) = @_;
   $h->show('startup.cml');
+}
+
+sub resize {
+  my($self, $h, $p) = @_;
+  $h->connection->data->{height} = $p->{height};
+  $h->push_empty;
 }
 
 sub games {

@@ -1,8 +1,7 @@
 <? SET bottom_height = 32 ~?>
-<? IF !h.connection.data.dev ~?>
-#lockresize
-#small
-<? END ~?>
+#resize(LW_show&<\52ESIZE>
+#exec(GW\7Copen\26resize\26height=<#WinH#>\29
+<\52ESIZE>)
 
 #font(YF,WF,WF)
 #box[%BOTTOM](x:0,w:100%,y:100%-<? bottom_height ?>,h:<? bottom_height ?>)
@@ -11,7 +10,7 @@
 #btn(%BOTTOM[x:95,y:4,w:80,h:28],{GW|open&room_info_dgl.dcml&VE_RID=<%RL_ID>},"Info")
 #btn(%BOTTOM[x:185,y:4,w:80,h:28],{GW|open&new_room_dgl.dcml&ASTATE=<%ASTATE>|LW_lockall},"New")
 #font(SYF,SWF,SWF)
-#txt(%BOTTOM[x:275,w:100%,y:7,h:24],{},"last start at <? server.data.start_at ?>")
+#txt(%BOTTOM[x:275,w:100%,y:7,h:24],{},"use top right button to resize window")
 #font(YF,WF,WF)
 #rtxt(%BOTTOM[x1:100%-10,x:300,y:5,h:24],{},"www.cossacks-server.net")
 
@@ -30,6 +29,9 @@
 
 <NGDLG>
 <NGDLG>
+
+<RESIZE>
+<RESIZE>
 
 #block(cancel.cml,CAN)<NGDLG>
 <NGDLG>
