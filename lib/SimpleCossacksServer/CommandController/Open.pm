@@ -149,13 +149,20 @@ sub _success_enter {
 
 sub startup {
   my($self, $h, $p) = @_;
-  $h->show('startup.cml');
+  my $size = !$h->connection->data->{height} || $h->connection->data->{height} > int(314 + (419 - 314)/2) ? 'large' : 'small';
+  $h->show('startup.cml', { window_size => $size });
 }
 
 sub resize {
   my($self, $h, $p) = @_;
-  $h->connection->data->{height} = $p->{height};
-  $h->push_empty;
+  my $height = $p->{height};
+  $h->connection->data->{height} = $height;
+  my $size = $height > int(314 + (419 - 314)/2) ? 'large' : 'small';
+  if($size eq 'large') {
+    $h->push_command(LW_show => "<RESIZE>\n#large\n<RESIZE>");
+  } else {
+    $h->push_command(LW_show => "<RESIZE>\n<RESIZE>");
+  }
 }
 
 sub games {

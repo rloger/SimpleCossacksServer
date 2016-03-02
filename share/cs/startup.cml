@@ -1,6 +1,4 @@
 <? SET bottom_height = 32 ~?>
-#small
-#lockresize
 #resize(LW_show&<\52ESIZE>
 #exec(GW\7Copen\26resize\26height=<#WinH#>\29
 <\52ESIZE>)
@@ -25,6 +23,9 @@
 <NGDLG>
 
 <RESIZE>
+<? IF window_size == 'large' ~?>
+#large
+<? END ?>
 <RESIZE>
 
 #block(cancel.cml,CAN)<NGDLG>

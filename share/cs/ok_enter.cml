@@ -1,5 +1,5 @@
 //#exec(LW_cfile&Cookie\5C%GV_LCN_PROF&123\00)
-<? IF 0 && window_size == 'large' ~?>
+<? IF window_size == 'large' ~?>
 #large
 <? END ~?>
 #exec(LW_key&key)
