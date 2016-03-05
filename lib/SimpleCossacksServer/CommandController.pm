@@ -27,6 +27,25 @@ sub open : Command {
   }
 }
 
+sub go : Command {
+  my($self, $h, $method, @params) = @_;
+  my %result_params;
+  while(@params) {
+    my $param = shift @params;
+    if($param =~ s/^(\w+)=//) {
+      $result_params{$1} = $param;
+    } elsif($param =~ /^(\w+):=$/) {
+      $result_params{$1} = shift @params;
+    }
+  }
+  if(SimpleCossacksServer::CommandController::Open->public($method)) {
+    SimpleCossacksServer::CommandController::Open->$method($h, \%result_params);
+  } else {
+    $h->log->warn("go $method" . (join " ", @params) .  " not found");
+    SimpleCossacksServer::CommandController::Open->_default($h, \%result_params);
+  }
+}
+
 sub echo : Command {
   my($self, $h, @args) = @_;
   $h->push_command( LW_echo => @args );
