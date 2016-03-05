@@ -65,5 +65,6 @@
 
 #font(YF,WF,RF)
 
-#sbtn[%B_RGST](%BOX[x:0,y:100%+8,w:160,h:24],{GW|open&try_enter.dcml&NICK=<%GV_LCN_NICK>^TYPE=<? type ?>^PASSWORD=<%PASSWORD>^LOGGED_IN=<? logged_in ?>|LW_lockall},"Enter")
+#exec(LW_gvar&%HEIGHT&Internet/Cash/height.dat)
+#sbtn[%B_RGST](%BOX[x:0,y:100%+8,w:160,h:24],{GW|go&try_enter&NICK=<%GV_LCN_NICK>&TYPE=<? type ?>&PASSWORD=<%PASSWORD>&LOGGED_IN=<? logged_in ?>&HEIGHT:=&<@%HEIGHT>|LW_lockall},"Enter")
 #sbtn[%B_RGST](%BOX[x:185,y:100%+8,w:160,h:24],{LW_key&#CANCEL|LW_lockall},"Cancel")

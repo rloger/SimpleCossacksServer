@@ -1,5 +1,5 @@
 <? SET bottom_height = 32 ~?>
-#resize(LW_show&<\52ESIZE>
+#resize(LW_cfile&<#WinH#>&height.dat|LW_show&<\52ESIZE>
 #exec(GW\7Copen\26resize\26height=<#WinH#>\29
 <\52ESIZE>)
 

@@ -50,7 +50,7 @@ sub try_enter {
       $nick = $h->connection->data->{account}{login};
       $nick =~ s/[^\[\]\w-]+//g;
       $h->server->post_account_action($h, 'enter');
-      $self->_success_enter($h, $nick);
+      $self->_success_enter($h, $p, $nick);
     } else {
       $h->show('enter.cml');
     }
@@ -102,7 +102,7 @@ sub try_enter {
           $h->connection->log_message . " " . $h->req->ver . " #authenticate successfull with " . lc($type)
           . " account " . String::Escape::printable("$account_data->{id} $account_data->{login}")
         );
-        $self->_success_enter($h, $nick);
+        $self->_success_enter($h, $p, $nick);
       }
     }
   } else {
@@ -113,13 +113,13 @@ sub try_enter {
     } elsif($nick =~ /^([0-9-])/) {
       $h->show('error_enter.cml', { error_text => "Bad character in nick. Nick can't start with " . ($1 eq '-' ? '-' : 'numerical digit') });
     } else {
-      $self->_success_enter($h, $nick);
+      $self->_success_enter($h, $p, $nick);
     }
   }
 }
 
 sub _success_enter {
-  my($self, $h, $nick) = @_;
+  my($self, $h, $p, $nick) = @_;
   my $g = $h->server->data;
   my $id;
   unless($h->connection->data->{id}) {
@@ -143,13 +143,15 @@ sub _success_enter {
   $g->{players}{$id}{account} = $account_data;
   $g->{players}{$id}{connected_at} = $h->connection->ctime;
   $g->{players}{$id}{id} = $id;
-  my $size = !$h->connection->data->{height} || $h->connection->data->{height} > int(314 + (419 - 314)/2) ? 'large' : 'small';
+  my $height = $p->{HEIGHT} =~ /^\d+$/ ? $p->{HEIGHT} : $h->connection->data->{height};
+  $h->connection->data->{height} = $height;
+  my $size = $height && $height > int(314 + (419 - 314)/2) ? 'large' : 'small';
   $h->show('ok_enter.cml', { nick => $nick, id => $id, window_size => $size });
 }
 
 sub startup {
   my($self, $h, $p) = @_;
-  my $size = !$h->connection->data->{height} || $h->connection->data->{height} > int(314 + (419 - 314)/2) ? 'large' : 'small';
+  my $size = $h->connection->data->{height} && $h->connection->data->{height} > int(314 + (419 - 314)/2) ? 'large' : 'small';
   $h->show('startup.cml', { window_size => $size });
 }
 
