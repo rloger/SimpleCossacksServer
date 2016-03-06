@@ -172,12 +172,6 @@ sub games {
   $self->startup(@_);
 }
 
-sub rooms_table_dgl {
-  my($self, $h, $p) = @_;
-  $h->push_command(LW_show => "<NGDLG>\n<NGDLG>");
-  #$h->show('rooms_table_dgl.cml');
-}
-
 sub new_room_dgl {
   my($self, $h, $p) = @_;
   if(!$p->{ASTATE}) {

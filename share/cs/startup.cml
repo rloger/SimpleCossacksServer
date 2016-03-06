@@ -16,8 +16,19 @@
 
 #box[%LBX](x:0,y:0,w:100%,h:100%-<? bottom_height ?>)
 
-#apan(%LBX[x:1,y:1,w:23,h:24],{GW|open&rooms_table_dgl.dcml},"0")
-<? INCLUDE cs/rooms_table_dgl.cml ~?>
+#apan(%LBX[x:1,y:1,w:23,h:24],{LW_file&Internet/Cash/rooms_table_dgl.dcml},"0")
+<ROOMS>
+#DBTBL[%RMLST](%LBX[x:1,y:1,w:100%,h:100%],{ROOMS_V<? h.req.ver ?>}{%RL_C},"<? server.config.table_timeout ?>",TBL_SF,9,9,
+0,"RID",NON,NON,NON,%RL_ID,
+<? h.connection.data.dev || server.config.show_started_rooms ? 3 : 0 ?>,"",<? IF h.connection.data.dev || server.config.show_started_rooms ?>STR<? ELSE ?>NON<? END ?>,NON,NON,%RS_ST,
+<? h.connection.data.dev || server.config.show_started_rooms? 50 : 53 ?>,"Game Title",STR,STR,STR,%RL_TITLE,
+15,"Host",STR,STR,STR,%RL_HOST,
+12,"Level",STR,FIXED:Any|Hard|Normal|Easy,STR,%RL_LEVL,
+10,"Players",STR,INT:Any|>1|>2|>3|>4|>5|>6,STR,%RL_PLRS,
+0,"V",NON,NON,NON,%RL_VERS,
+10,"Ping",PING,PING:Any|<100|<200|<300|<400|<500|<600,PING,%RL_IPADR,
+0,"Sort",NON,NON,STR,%RL_SORT)
+<ROOMS>
 
 <NGDLG>
 <NGDLG>
@@ -27,6 +38,8 @@
 #large
 <? END ?>
 <RESIZE>
+
+#save(rooms_table_dgl.dcml,ROOMS)
 
 #block(cancel.cml,CAN)<NGDLG>
 <NGDLG>
