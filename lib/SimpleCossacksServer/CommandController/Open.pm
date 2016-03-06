@@ -338,7 +338,7 @@ sub user_details {
       room => $h->server->data->{rooms_by_player}{ $id },
     }); 
   } else {
-    $self->log->warn("There is no info about player $id");
+    $h->log->warn("There is no info about player $id");
   }
 }
 
