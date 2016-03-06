@@ -174,7 +174,8 @@ sub games {
 
 sub rooms_table_dgl {
   my($self, $h, $p) = @_;
-  $h->show('rooms_table_dgl.cml');
+  $h->push_command(LW_show => "<NGDLG>\n<NGDLG>");
+  #$h->show('rooms_table_dgl.cml');
 }
 
 sub new_room_dgl {
@@ -208,7 +209,7 @@ sub reg_new_room {
     my $level = $p->{VE_LEVEL} == 3 ? 'Hard' : $p->{VE_LEVEL} == 2 ? 'Normal' : $p->{VE_LEVEL} == 1 ? 'Easy' : 'For all';
     my $title = $p->{VE_TITLE};
     s/^\s+//, s/\s+$// for $title;
-    my $row = [ $room_id, '', $title, $h->connection->data->{nick}, ($h->is_american_conquest ? $p->{VE_TYPE} : ()), $level, "1/".($p->{VE_MAX_PL}+2), $h->req->ver, $h->connection->int_ip, sprintf("0%X", 0xFFFFFFFF - $room_id) ];
+    my $row = [ $room_id, (length $p->{VE_PASSWD} ? '#' : ''), $title, $h->connection->data->{nick}, ($h->is_american_conquest ? $p->{VE_TYPE} : ()), $level, "1/".($p->{VE_MAX_PL}+2), $h->req->ver, $h->connection->int_ip, sprintf("0%X", 0xFFFFFFFF - $room_id) ];
     my $ctlsum = $h->server->_room_control_sum($row);
     my $room = {
       row            => $row,
