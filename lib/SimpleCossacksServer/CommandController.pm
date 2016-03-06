@@ -223,6 +223,12 @@ sub _before {
       $message .= " #1/$gettbl_log_interval";
     }
   } else {
+    if($cmd eq 'go' && $args->[0] eq 'try_enter') {
+      $args = [@$args];
+      for(@$args) {
+        s/^PASSWORD=\K.*/.../s;
+      }
+    }
     $message .= " -$cmd " . join " ", map { '"' . String::Escape::printable($_) . '"' } @$args;
   }
   $h->log->info($message);
