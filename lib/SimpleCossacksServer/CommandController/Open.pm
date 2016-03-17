@@ -113,6 +113,7 @@ sub try_enter {
     } elsif($nick =~ /^([0-9-])/) {
       $h->show('error_enter.cml', { error_text => "Bad character in nick. Nick can't start with " . ($1 eq '-' ? '-' : 'numerical digit') });
     } else {
+      $nick = substr($nick, 0, 25) if length($nick) > 25;
       $self->_success_enter($h, $p, $nick);
     }
   }
@@ -202,6 +203,7 @@ sub reg_new_room {
     my $room_id = ++$h->server->data->{last_room};
     my $level = $p->{VE_LEVEL} == 3 ? 'Hard' : $p->{VE_LEVEL} == 2 ? 'Normal' : $p->{VE_LEVEL} == 1 ? 'Easy' : 'For all';
     my $title = $p->{VE_TITLE};
+    $title = substr($title, 0, 60) if length($title) > 60;
     s/^\s+//, s/\s+$// for $title;
     my $row = [ $room_id, (length $p->{VE_PASSWD} ? '#' : ''), $title, $h->connection->data->{nick}, ($h->is_american_conquest ? $p->{VE_TYPE} : ()), $level, "1/".($p->{VE_MAX_PL}+2), $h->req->ver, $h->connection->int_ip, sprintf("0%X", 0xFFFFFFFF - $room_id) ];
     my $ctlsum = $h->server->_room_control_sum($row);
