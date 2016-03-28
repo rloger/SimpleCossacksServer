@@ -107,6 +107,12 @@ sub leave : Command {
 
 sub start : Command {
   my($self, $h, $sav, $map, $players_count, @players_list) = @_;
+  if($map =~ /^RN[012] [0-9A-F]+ [0-9A-Z]*3[0-9A-Z]{3} [0-9A-Z]+ [0-9A-Z]+\.m3d\0?$/) { # 1 апреля, 7млн. ресурсов :)
+    my($sec, $min, $hour, $day, $mon) = localtime();
+    if($mon == 3 && ($day == 1 || $day == 2 && $hour < 5)) {
+      $h->push_command(LW_bonus => '700');
+    }
+  }
   my $room = $h->server->start_room( $h->connection->data->{id}, { ai => ($sav =~ /<AI>/) } );
   if($room) {
     if($room->{host_id} == $h->connection->data->{id}) {
