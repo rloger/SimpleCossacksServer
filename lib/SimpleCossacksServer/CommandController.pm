@@ -113,7 +113,7 @@ sub start : Command {
       $h->push_command(LW_bonus => '700');
     }
   }
-  my $room = $h->server->start_room( $h->connection->data->{id}, { ai => ($sav =~ /<AI>/) } );
+  my $room = $h->server->start_room( $h->connection->data->{id}, { ai => scalar($sav =~ /<AI>/) } );
   if($room) {
     if($room->{host_id} == $h->connection->data->{id}) {
       $h->log->info($h->connection->log_message . " " . $h->req->ver . " #start his game $room->{id} $room->{title}");
