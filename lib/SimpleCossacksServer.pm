@@ -260,10 +260,10 @@ sub post_account_action {
 sub export_rooms {
   my($self) = @_;
   my $rooms = $self->data->{dbtbl}{ROOMS_V2} || [];
-  my $r = {};
   my $rms = [];
   $self->log->debug("exporting " . scalar(@$rooms) . " rooms");
   for my $room (@$rooms) {
+    my $r = {};
     state $copy = [qw<id title ctime level max_players>];
     @{$r}{@$copy} = @{$room}{@$copy};
     $r->{password} = JSON::true if $room->{password} ne '';
@@ -294,7 +294,7 @@ sub export_rooms {
     $r->{$_} = $r->{$_}+0 for qw<id ctime level max_players>;
     push @$rms, $r;
   }
-  my $json = JSON::to_json($rms);
+  my $json = JSON::to_json({ rooms => $rms });
   aio_open $self->config->{export_rooms_file}, Fcntl::O_CREAT|Fcntl::O_TRUNC|Fcntl::O_WRONLY, 0644, sub {
     my($fh) = @_;
     unless($fh) {
