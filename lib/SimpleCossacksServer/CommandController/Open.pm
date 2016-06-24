@@ -220,7 +220,6 @@ sub reg_new_room {
       players        => { $player_id => { %{$h->server->data->{players}->{$player_id}} } },
       players_time   => { $player_id => time },
       max_players    => $p->{VE_MAX_PL} + 2,
-      passwd         => $p->{VE_PASSWD},
       ver            => $h->req->ver,
       level          => int($p->{VE_LEVEL}),
       ctime          => time,
