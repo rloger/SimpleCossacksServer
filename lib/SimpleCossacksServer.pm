@@ -5,11 +5,13 @@ use SimpleCossacksServer::CommandController;
 use SimpleCossacksServer::ConnectionController;
 use SimpleCossacksServer::Handler;
 use SimpleCossacksServer::Connection;
+use feature 'state';
 use Template;
 use Config::Simple;
 use POSIX();
 use JSON();
 use AnyEvent::HTTP();
+use AnyEvent::IO;
 extends 'GSC::Server';
 has template_engine => (is => 'rw');
 has config_file => (is => 'ro');
@@ -20,6 +22,7 @@ has host => (is => 'ro', default => sub { shift->config->{host} // 'localhost' }
 has port => (is => 'ro', default => sub { shift->config->{port} // 34001 });
 has log_access_ctx => (is => 'rw', builder => '_build_log_access_ctx');
 has log_error_ctx => (is => 'rw', builder => '_build_log_error_ctx');
+has _export_rooms_timer => (is => 'rw');
 
 sub command_controller { 'SimpleCossacksServer::CommandController' }
 sub handler_class { 'SimpleCossacksServer::Handler' }
@@ -84,6 +87,10 @@ sub start {
   my $self = shift;
   local $ENV{TZ} = 'UTC';
   $self->data->{start_at} = POSIX::strftime "%Y-%m-%d %H:%M %Z", localtime time;
+  if($self->config->{export_rooms_time} && $self->config->{export_rooms_file}) {
+    my $w = AE::timer $self->config->{export_rooms_time}, $self->config->{export_rooms_time}, sub {$self->export_rooms() };
+    $self->_export_rooms_timer($w);
+  }
   $self->SUPER::start(@_);
 }
 
@@ -92,6 +99,10 @@ sub reload {
   $self->log->notice('reset server');
 
   $self->reload_config;
+  if($self->data->{start_at} && $self->config->{export_rooms_time} && $self->config->{export_rooms_file}) {
+    my $w = AE::timer $self->config->{export_rooms_time}, $self->config->{export_rooms_time}, sub { $self->export_rooms() };
+    $self->_export_rooms_timer($w);
+  }
 
   if($self->config->{access_log}) {
     if($self->log_access_ctx) {
@@ -174,7 +185,7 @@ sub leave_room {
     delete $room->{players_time}{ $player_id };
     $room->{row}[-4] = $room->{players_count} . "/" . $room->{max_players};
   } else {
-    $room->{players}{ $player_id }{exited} = 1;
+    $room->{players}{ $player_id }{exited} = time;
   }
   my $in_ctrl_sum = delete $self->data->{rooms_by_ctlsum}->{ $room->{ctlsum} };
   $room->{ctlsum} = $self->_room_control_sum($room->{row});
@@ -244,6 +255,61 @@ sub post_account_action {
       }
     ;
   }
+}
+
+sub export_rooms {
+  my($self) = @_;
+  my $rooms = $self->data->{dbtbl}{ROOMS_V2} || [];
+  my $r = {};
+  my $rms = [];
+  $self->log->debug("exporting " . scalar(@$rooms) . " rooms");
+  for my $room (@$rooms) {
+    state $copy = [qw<id title ctime level max_players>];
+    @{$r}{@$copy} = @{$room}{@$copy};
+    $r->{password} = JSON::true if $room->{password} ne '';
+    if($room->{started}) {
+      $r->{started_at} = $room->{started}+0;
+      $r->{ai} = $room->{ai} ? JSON::true : JSON::false;
+      $r->{map} = $room->{map};
+      $r->{time} = $room->{time}+0;
+    }
+    $r->{players} = [];
+    my $players = $room->{started_players} // [sort { $room->{players_time}{$a->{id}} <=> $room->{players_time}{$b->{id}} } values %{$room->{players}}];
+    for my $player (@$players) {
+      my $p = {};
+      state $copy = [qw<id nick connected_at>];
+      @{$p}{@$copy} = @{$player}{@$copy};
+      $p->{joined_at} = $room->{players_time}{$p->{id}};
+      for(qw<color nation theam>) {
+        $p->{$_} = $player->{$_}+0 if exists $player->{$_};
+      }
+      if($player->{stat}) {
+        $p->{scores} = $player->{stat}{scores}+0;
+        $p->{population} = $player->{stat}{population}+0;
+      }
+      $p->{exited_at} = $player->{exited}+0 if exists $player->{exited};
+      $p->{$_} = $p->{$_}+0 for qw<id connected_at>;
+      push @{$r->{players}}, $p;
+    }
+    $r->{$_} = $r->{$_}+0 for qw<id ctime level max_players>;
+    push @$rms, $r;
+  }
+  my $json = JSON::to_json($rms);
+  aio_open $self->config->{export_rooms_file}, Fcntl::O_CREAT|Fcntl::O_TRUNC|Fcntl::O_WRONLY, 0644, sub {
+    my($fh) = @_;
+    unless($fh) {
+      $self->log->warn("can't open file export_rooms_file $self->config->{export_rooms_file} for write: $!");
+      return;
+    }
+    aio_write $fh, $json, sub {
+      my($length) = @_;
+      if(!defined $length) {
+        $self->log->warn("can't write data to export_rooms_file $self->config->{export_rooms_file}: $!");
+      } elsif($length < length($json)) {
+        $self->log->warn("not full write to export_rooms_file, $length written, " . length($json) . " expected");
+      }
+    };
+  };
 }
 
 __PACKAGE__->meta->make_immutable();
