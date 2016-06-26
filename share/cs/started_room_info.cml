@@ -5,6 +5,12 @@
 #exec(GW\7Copen\26resize\26height=<#WinH#>\29
 <\52ESIZE>)
 
+<? IF h.connection.data.dev ?>
+#ebox[%EBX](x:+0,y:+0,w:100%,h:100%)
+#font(YF,YF,YF)
+#txt(%EBX[x:38,y:130,w:100,h:20],{},"#<? room.id ?>")
+<? END ?>
+
 #sbox[%LBX](x:0,y:0,w:100%,h:100%)
 #font(BYF,BYF,BYF)
 #txt(%LBX[x:6,y:3,w:100%,h:40],{},<? room.title | arg ?>)
