@@ -264,7 +264,7 @@ sub export_rooms {
   $self->log->debug("exporting " . scalar(@$rooms) . " rooms");
   for my $room (@$rooms) {
     my $r = {};
-    state $copy = [qw<id title ctime level max_players>];
+    state $copy = [qw<id title ctime level max_players host_id>];
     @{$r}{@$copy} = @{$room}{@$copy};
     $r->{password} = JSON::true if $room->{password} ne '';
     if($room->{started}) {
@@ -283,15 +283,11 @@ sub export_rooms {
       for(qw<color nation theam>) {
         $p->{$_} = $player->{$_}+0 if exists $player->{$_};
       }
-      if($player->{stat}) {
-        $p->{scores} = $player->{stat}{scores}+0;
-        $p->{population} = $player->{stat}{population}+0;
-      }
       $p->{exited_at} = $player->{exited}+0 if exists $player->{exited};
       $p->{$_} = $p->{$_}+0 for qw<id connected_at>;
       push @{$r->{players}}, $p;
     }
-    $r->{$_} = $r->{$_}+0 for qw<id ctime level max_players>;
+    $r->{$_} = $r->{$_}+0 for qw<id ctime level max_players host_id>;
     push @$rms, $r;
   }
   my $json = JSON::to_json({ rooms => $rms });
