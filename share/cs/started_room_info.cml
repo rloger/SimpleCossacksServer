@@ -53,7 +53,9 @@
 <? offsetx = table.left ~?>
 #font(YF,YF,YF)
 #pan(%LBX[x:<? offsetx ?>,y:<? offsety ?>,w:<? table.width.nick ?>,h:<? table.row_height ?>],5)
+<? IF player.exited ?>#font(RF,RF,RF)<? END ?>
 #txt(%LBX[x:<? offsetx + 3 ?>,y:<? offsety + 3 ?>,w:<? table.width.nick - 2 ?>,h:<? table.row_height ?>],{},<? player.nick | arg ?>)
+#font(YF,YF,YF)
 <? offsetx = offsetx + table.width.nick - 1 ~?>
 #pan(%LBX[x:<? offsetx ?>,y:<? offsety ?>,w:22,h:<? table.row_height ?>],0)
 #pix(%LBX[x:<? offsetx + 2 ?>,y:<? offsety + 2 ?>,w:18,h:18],{},Internet/pix/squares,<? player.color ?>,<? player.color ?>,<? player.color ?>,<? player.color ?>)

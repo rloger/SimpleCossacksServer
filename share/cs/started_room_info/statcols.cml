@@ -126,7 +126,7 @@
 #ctxt(%LBX[x:<? offsetx ?>,y:<? offsety + 3 ?>,w:<? table.width.smallcol ?>,h:22],{},"<? IF !player.zombie || player.stat.change_population2 ?><? player.stat.change_population2 | format("%.1f") ?><? ELSE ?>-<? END ?>")
 <? offsetx = offsetx + table.width.smallcol - 1 ~?>
 #pan(%LBX[x:<? offsetx  ?>,y:<? offsety ?>,w:<? table.width.largecol ?>,h:<? table.row_height ?>],5)
-#ctxt(%LBX[x:<? offsetx ?>,y:<? offsety + 3 ?>,w:<? table.width.largecol ?>,h:22],{},"<? IF !player.zombie || player.stat.casuality ?><? player.stat.casuality ?><? ELSE ?>-<? END ?>")
+#ctxt(%LBX[x:<? offsetx ?>,y:<? offsety + 3 ?>,w:<? table.width.largecol ?>,h:22],{},"<? IF !player.zombie || player.stat.casuality ?><? player.stat.casuality >= 0 ? player.stat.casuality : 0 ?><? ELSE ?>-<? END ?>")
 <? offsetx = offsetx + table.width.largecol - 1 ~?>
 <? ELSIF page == 2 ?>
 #pan(%LBX[x:<? offsetx ?>,y:<? offsety ?>,w:<? table.width.smallcol ?>,h:<? table.row_height ?>],5)
@@ -172,7 +172,7 @@
 #ctxt(%LBX[x:<? offsetx ?>,y:<? offsety + 3 ?>,w:<? table.width.largecol ?>,h:22],{},"<? IF !player.zombie || player.stat.population2 ?><? player.stat.population2 ?><? ELSE ?>-<? END ?>")
 <? offsetx = offsetx + table.width.largecol - 1 ~?>
 #pan(%LBX[x:<? offsetx  ?>,y:<? offsety ?>,w:<? table.width.largecol ?>,h:<? table.row_height ?>],5)
-#ctxt(%LBX[x:<? offsetx ?>,y:<? offsety + 3 ?>,w:<? table.width.largecol ?>,h:22],{},"<? IF !player.zombie || player.stat.casuality ?><? player.stat.casuality ?><? ELSE ?>-<? END ?>")
+#ctxt(%LBX[x:<? offsetx ?>,y:<? offsety + 3 ?>,w:<? table.width.largecol ?>,h:22],{},"<? IF !player.zombie || player.stat.casuality ?><? player.stat.casuality >=0 ? player.stat.casuality : 0 ?><? ELSE ?>-<? END ?>")
 <? offsetx = offsetx + table.width.largecol - 1 ~?>
 <? END ~?>
 <? offsety = offsety + table.row_height - (loop.first ? 1 : 0) ~?>
