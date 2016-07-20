@@ -272,7 +272,7 @@ sub room_info_dgl {
       Venice
       Algeria
       Turkey
-      Vengria
+      Hungary
       Switzerland
       (Random)
     >];
