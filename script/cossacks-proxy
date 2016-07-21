@@ -7,13 +7,14 @@ use Getopt::Long::Descriptive v0.097;
 use GSC::Stream;
 
 # Прокси для безболезненного перезда сервера с одного ip на другой, на время смены DNS
+# ToDo: разобрастя с разрывом и штатным закрытием соединения
 
 my ($opt, $usage) = describe_options(
   'cossacks-proxy %o',
   ['from|f=s', 'Listen ip:port', { required => 1,  }],
   ['to|t=s', 'Connect to host:port', { required => 1 }],
   ['max-request-size|s', 'Max request size'],
-  ['log-level|l=s', 'Log level', { default => 'note' }],
+  ['log-level|l=s', 'Log level', { default => 'info' }],
   ['help|h', 'Print help message', { shortcircuit => 1 }],
 );
 
