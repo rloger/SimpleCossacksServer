@@ -28,6 +28,12 @@
 #font(WF,WF,WF)
 #apan[%P_ACCOUNT](%B[x:105,y:%L_CTIME+3,w:33,h:20],{<? IF player.account.profile ?>GW|url&<? player.account.profile | cmd ?>&from=user_details<? END ?>},<? player.account.profile ? 14 : 4 ?>)
 #txt[%T_ACCOUNT](%B[x:109,y:%L_CTIME+6,w:33,h:100],{},"<? player.account.type ?>")
+<? IF player.account.type == 'LCN' && h.server.data.lcn_place_by_id.${player.account.id} ?>
+#font(YF,YF,YF)
+#txt(%B[x:145,y:%L_CTIME+6,w:100,h:100],{},"Place:")
+#font(WF,WF,WF)
+#txt(%B[x:181,y:%L_CTIME+6,w:100,h:100],{},<? h.server.data.lcn_place_by_id.${player.account.id} | arg ?>)
+<? END ?>
 <? END ?>
 
 <? IF room ?>

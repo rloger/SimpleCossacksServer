@@ -48,6 +48,8 @@ sub init {
 
   # AnyEvent::Log
   $AnyEvent::Log::LOG->log_cb(sub { print STDERR shift; 0 });
+
+  $self->load_lcn_ranking();
 }
 
 sub _build_log_error_ctx {
@@ -306,6 +308,34 @@ sub export_rooms {
       }
     };
   };
+}
+
+sub load_lcn_ranking {
+  my($self) = @_;
+  my $ranking_file = $self->config->{lcn_ranking};
+  my $mtime = (stat $ranking_file)[9] // 0;
+  if(!$self->data->{lcn_ranking_mtime} || $self->data->{lcn_ranking_mtime} != $mtime) {
+    my $cv = AE::cv;
+    aio_load $ranking_file, $cv;
+    my $data = $cv->recv();
+    unless(defined $data) {
+      $self->log->error("can't load LCN ranking file $ranking_file: $!");
+      return;
+    }
+    my $rating = eval { JSON::from_json($data) };
+    unless($rating) {
+      $self->log->error("can't parse json file $ranking_file: $@");
+      return;
+    };
+    my $places = {};
+    for my $row (@{$rating->{ranking}{total}}) {
+      $places->{$row->{id}} = $row->{place};
+    }
+    $self->data->{lcn_place_by_id} = $places;
+    $self->data->{lcn_ranking} = $rating;
+    $self->data->{lcn_ranking_mtime} = $mtime;
+  }
+  return $self->data->{lcn_ranking};
 }
 
 __PACKAGE__->meta->make_immutable();

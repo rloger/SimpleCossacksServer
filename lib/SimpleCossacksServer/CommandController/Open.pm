@@ -3,13 +3,17 @@ use Mouse;
 use Coro::LWP;
 use LWP;
 use JSON;
+use AnyEvent::IO;
 use String::Escape();
+use URI();
+use URI::QueryParam();
 use feature 'state';
 
 my @PUBLIC = qw[
   enter try_enter startup resize games rooms_table_dgl new_room_dgl reg_new_room
   join_game join_pl_cmd user_details users_list direct direct_ping 
-  direct_join room_info_dgl started_room_message test
+  direct_join room_info_dgl started_room_message
+  tournaments lcn_registration_dgl
 ];
 
 
@@ -92,10 +96,14 @@ sub try_enter {
         my $account_data = {
           login => $nick,
           id => $result->{id},
-          profile => $result->{profile},
           type => $type,
         };
         $account_data->{profile} = $result->{profile} if defined $result->{profile} && $result->{profile} =~ m{^https?://};
+        if($type eq 'LCN') {
+          my $url = URI->new("http://" . $h->server->config->{lcn_host} . "/lang_redir.php");
+          $url->query_param(path => 'player.php?plid=' . $account_data->{id});
+          $account_data->{profile} = "$url";
+        }
         $h->connection->data->{account} = $account_data;
         $nick =~ s/[^\[\]\w-]+//g;
         $nick =~ s/^(?=\d)/_/;
@@ -145,6 +153,7 @@ sub _success_enter {
   $g->{players}{$id}{account} = $account_data;
   $g->{players}{$id}{connected_at} = $h->connection->ctime;
   $g->{players}{$id}{id} = $id;
+  $g->{players}{$id}{account} = $h->connection->data->{account};
   my $height = $p->{HEIGHT} =~ /^\d+$/ ? $p->{HEIGHT} : $h->connection->data->{height};
   $h->connection->data->{height} = $height;
   my $size = $height && $height > int(314 + (419 - 314)/2) ? 'large' : 'small';
@@ -392,6 +401,34 @@ sub join_pl_cmd {
     $self->room_info_dgl($h, { VE_RID => $room->{id} });
     return;
   }
+}
+
+sub tournaments {
+  my($self, $h, $p) = @_;
+  my $option = $p->{option} // 'total';
+  my $rating = $h->server->load_lcn_ranking();
+  if(!$rating) {
+    $self->_error($h, 'Internal server error');
+    return;
+  } else {
+    $h->show('lcn_rating.cml', {
+      options => $rating->{options},
+      options_labels => $rating->{labels},
+      current_option => $option,
+      rating => $rating->{ranking}{$option},
+    });
+  }
+}
+
+sub lcn_registration_dgl {
+  my($self, $h, $p) = @_;
+  $h->show('confirm_dgl.cml', {
+    header  => "LCN Registration",
+    text    => "Open www.newlcn.com?",
+    ok_text => "Ok",
+    command => "GW|url&http://" . $h->server->config->{lcn_host} . "/lang_redir.php&from=tournaments",
+    height  => 100,
+  });
 }
 
 sub users_list {

@@ -19,7 +19,7 @@
   #font(YF,WF,BF)
   #txt(%BOX[x:10,y:39,w:100%,h:24],{},"Logon with")
   #font(WF,WF,BF)
-  #apan(%BOX[x:81-3,y:38,w:<? type == 'LCN' ? 73 : 68 ?>,h:20],{GW|url&http://<? type == 'LCN' ? 'www.newlcn.com' : 'wcl.com.ua' ?>/&from=enter},14)
+  #apan(%BOX[x:81-3,y:38,w:<? type == 'LCN' ? 73 : 68 ?>,h:20],{GW|url&<? type == 'LCN' ? 'http://www.newlcn.com/lang_redir.php' : 'http://wcl.com.ua/' ?>&from=enter},14)
   #txt(%BOX[x:81,y:39,w:100%,h:24],{},"<? type == 'LCN' ? 'newlcn.com' : 'wcl.com.ua' ?>")
   #font(YF,WF,BF)
   #txt(%BOX[x:<? type == 'LCN' ? 153 : 148 ?>,y:39,w:100%,h:24],{},"account:")
