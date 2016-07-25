@@ -1,4 +1,7 @@
-<? SET bottom_height = 32 ~?>
+<?~ SET bottom_height = 32 ~?>
+<?~ USE POSIX ~?>
+<?~ USE CMLStringArgFilter ~?>
+<?~ USE CMDFilter ~?>
 #resize(LW_cfile&<#WinH#>&height.dat|LW_show&<\52ESIZE>
 #exec(GW\7Copen\26resize\26height=<#WinH#>\29
 <\52ESIZE>)
@@ -10,8 +13,23 @@
 #btn(%BOTTOM[x:95,y:4,w:80,h:28],{GW|open&room_info_dgl.dcml&VE_RID=<%RL_ID>},"Info")
 #btn(%BOTTOM[x:185,y:4,w:80,h:28],{GW|open&new_room_dgl.dcml&ASTATE=<%ASTATE>|LW_lockall},"New")
 #btn(%BOTTOM[x:643,y:4,w:106,h:28],{GW|open&tournaments.dcml&option=total|LW_lockall},"Tournaments")
+<?~ IF !gg_cup || gg_cup.started ?>
 #font(YF,WF,WF)
 #rtxt(%BOTTOM[x1:100%-124,x:300,y:7,h:24],{},"www.cossacks-server.net")
+<?~ ELSE ?>
+#ebox[%EBX](x:0,y:0,w:100%,h:100%)
+#font(SWF,SWF,SWF)
+#txt(%EBX[x:6,w:200,y:0-21,h:24],{},"www.cossacks-server.net")
+#font(SYF,SYF,SYF)
+#txt(%BOTTOM[x:273,w:400,y:8,h:24],{},"Registration on")
+#font(SWF,SWF,SWF)
+#apan(%BOTTOM[x:356,y:7,w:95,h:17],{GW|url&http://goodgame.ru/cup/<? gg_cup.id | cmd ?>/&from=enter},15)
+#txt(%BOTTOM[x:359,w:400,y:8,h:24],{},"Cossacks GG Cup")
+<?~ IF !gg_cup.wo_info ?>
+#font(SYF,SYF,SYF)
+#txt(%BOTTOM[x:446,w:400,y:8,h:24],{},<? ", " _ gg_cup.players_count _ " players, " _ POSIX.floor(gg_cup.prize_fund) _ " RUB prize fund" | arg ?>)
+<?~ END ?>
+<?~ END ?>
 
 #font(YF,WF,WF)
 #box[%LBX](x:0,y:0,w:100%,h:100%-<? bottom_height ?>)

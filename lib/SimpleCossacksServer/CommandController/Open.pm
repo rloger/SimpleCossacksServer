@@ -163,7 +163,8 @@ sub _success_enter {
 sub startup {
   my($self, $h, $p) = @_;
   my $size = $h->connection->data->{height} && $h->connection->data->{height} > int(314 + (419 - 314)/2) ? 'large' : 'small';
-  $h->show('startup.cml', { window_size => $size });
+  my $gg_cup = $h->server->load_gg_cup();
+  $h->show('startup.cml', { window_size => $size, gg_cup => $gg_cup });
 }
 
 sub resize {

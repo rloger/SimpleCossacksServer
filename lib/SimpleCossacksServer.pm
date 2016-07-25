@@ -338,6 +338,31 @@ sub load_lcn_ranking {
   return $self->data->{lcn_ranking};
 }
 
+sub load_gg_cup {
+  my($self) = @_;
+  my $gg_cup_file = $self->config->{gg_cup_file} or return;
+  my $mtime = (stat $gg_cup_file)[9] // 0;
+  if(!$self->data->{gg_cup_mtime} || $self->data->{gg_cup_mtime} != $mtime) {
+    my $cv = AE::cv;
+    aio_load $gg_cup_file, $cv;
+    my $data = $cv->recv();
+    unless(defined $data) {
+      $self->log->error("can't load GG Cup file $gg_cup_file: $!");
+      return $self->data->{gg_cup} = { wo_info => 1 };
+    }
+    unless($data) {
+      return $self->data->{gg_cup} = { wo_info => 1 };
+    }
+    my $gg_cup = eval { JSON::from_json($data) };
+    unless($gg_cup) {
+      $self->log->error("can't parse json file $gg_cup_file: $@");
+      return $self->data->{gg_cup} = { wo_info => 1 };
+    }
+    $self->data->{gg_cup} = $gg_cup;
+  }
+  return $self->data->{gg_cup};
+}
+
 __PACKAGE__->meta->make_immutable();
 
 =head1 NAME
