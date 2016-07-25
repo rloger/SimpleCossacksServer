@@ -22,7 +22,7 @@
 #font(YF,YF,YF)
 #txt(%LBX[x:6,y:<? offsety + 9 ?>,w:100%,h:40],{},"time: <? room_time ?> [<? room.time / 25 | format("%.0f") ?>t]")
 #pan(%LBX[x:158,y:<? offsety + 10 ?>,w:1,h:15],2)
-#txt(%LBX[x:168,y:<? offsety + 9 ?>,w:100,h:40],{},"level: for all")
+#txt(%LBX[x:168,y:<? offsety + 9 ?>,w:100,h:40],{},"level: <? room.level == 3 ? "hard" : room.level == 2 ? "normal" : room.level == 1 ? "easy" : "for all" ?>")
 
 <? SET offsetx = 0 ~?>
 <? SET offsety = 0 ~?>
