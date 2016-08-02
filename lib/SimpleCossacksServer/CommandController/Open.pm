@@ -13,7 +13,7 @@ my @PUBLIC = qw[
   enter try_enter startup resize games rooms_table_dgl new_room_dgl reg_new_room
   join_game join_pl_cmd user_details users_list direct direct_ping 
   direct_join room_info_dgl started_room_message
-  tournaments lcn_registration_dgl
+  tournaments lcn_registration_dgl gg_cup_thanks_dgl
 ];
 
 
@@ -430,6 +430,12 @@ sub lcn_registration_dgl {
     command => "GW|url&http://" . $h->server->config->{lcn_host} . "/lang_redir.php&from=tournaments",
     height  => 100,
   });
+}
+
+sub gg_cup_thanks_dgl {
+  my($self, $h, $p) = @_;
+  my $gg_cup = $h->server->load_gg_cup();
+  $h->show('gg_cup_thanks_dgl.cml', { supporters => $gg_cup->{supporters} });
 }
 
 sub users_list {

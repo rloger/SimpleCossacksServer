@@ -6,6 +6,7 @@
 #exec(GW\7Copen\26resize\26height=<#WinH#>\29
 <\52ESIZE>)
 
+#def_panel(15,Internet/pix/i_bor%d,48,49,50,51,52,53,55,54,67,45)
 #font(YF,WF,WF)
 #box[%BOTTOM](x:0,w:100%,y:100%-<? bottom_height ?>,h:<? bottom_height ?>)
 #pan(%BOTTOM[x:0-1,w:100%+2,y:0-1,h:100%+2],1)
@@ -14,7 +15,7 @@
 #btn(%BOTTOM[x:185,y:4,w:80,h:28],{GW|open&new_room_dgl.dcml&ASTATE=<%ASTATE>|LW_lockall},"New")
 #btn(%BOTTOM[x:643,y:4,w:106,h:28],{GW|open&tournaments.dcml&option=total|LW_lockall},"Tournaments")
 <?~ IF !gg_cup || gg_cup.started ?>
-#font(YF,WF,WF)
+#font(YF,YF,YF)
 #rtxt(%BOTTOM[x1:100%-124,x:300,y:7,h:24],{},"www.cossacks-server.net")
 <?~ ELSE ?>
 #ebox[%EBX](x:0,y:0,w:100%,h:100%)
@@ -27,7 +28,15 @@
 #txt(%BOTTOM[x:359,w:400,y:8,h:24],{},"Cossacks GG Cup")
 <?~ IF !gg_cup.wo_info ?>
 #font(SYF,SYF,SYF)
-#txt(%BOTTOM[x:446,w:400,y:8,h:24],{},<? ", " _ gg_cup.players_count _ " players, " _ POSIX.floor(gg_cup.prize_fund) _ " RUB prize fund" | arg ?>)
+#apan(%BOTTOM[x:<? 502 + 7 * gg_cup.players_count.length ?>,y:7,w:<? 31 + 7 * POSIX.floor(gg_cup.prize_fund).length ?>,h:17],{GW|go&gg_cup_thanks_dgl},15)
+#txt(%BOTTOM[x:446,w:400,y:8,h:24],{},", ")
+#txt(%BOTTOM[x:454,w:400,y:8,h:24],{},<? gg_cup.players_count | arg ?>)
+#txt(%BOTTOM[x:<? 459 + 7 * gg_cup.players_count.length ?>,w:400,y:8,h:24],{},"players")
+#font(SWF,SWF,SWF)
+#txt(%BOTTOM[x:<? 504 + 7 * gg_cup.players_count.length ?>,w:400,y:8,h:24],{},<? POSIX.floor(gg_cup.prize_fund) | arg ?>)
+#txt(%BOTTOM[x:<? 509 + 7 * gg_cup.players_count.length + 7 * POSIX.floor(gg_cup.prize_fund).length ?>,w:400,y:8,h:24],{},"RUB")
+#font(SYF,SYF,SYF)
+#txt(%BOTTOM[x:<? 536 + 7 * gg_cup.players_count.length + 7 * POSIX.floor(gg_cup.prize_fund).length ?>,w:400,y:8,h:24],{},"prize fund")
 <?~ END ?>
 <?~ END ?>
 
