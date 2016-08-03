@@ -13,7 +13,11 @@
 #btn(%BOTTOM[x:5,y:4,w:80,h:28],{GW|open&join_game.dcml&ASTATE=<%ASTATE>^VE_RID=<%RL_ID>},"Join")
 #btn(%BOTTOM[x:95,y:4,w:80,h:28],{GW|open&room_info_dgl.dcml&VE_RID=<%RL_ID>},"Info")
 #btn(%BOTTOM[x:185,y:4,w:80,h:28],{GW|open&new_room_dgl.dcml&ASTATE=<%ASTATE>|LW_lockall},"New")
+<?~ IF !gg_cup || gg_cup.started ?>
 #btn(%BOTTOM[x:643,y:4,w:106,h:28],{GW|open&tournaments.dcml&option=total|LW_lockall},"Tournaments")
+<?~ ELSE ?>
+#btn(%BOTTOM[x:660,y:4,w:89,h:28],{GW|open&tournaments.dcml&option=total|LW_lockall},"Tournaments")
+<?~ END ?>
 <?~ IF !gg_cup || gg_cup.started ?>
 #font(YF,YF,YF)
 #rtxt(%BOTTOM[x1:100%-124,x:300,y:7,h:24],{},"www.cossacks-server.net")
@@ -22,21 +26,35 @@
 #font(SWF,SWF,SWF)
 #txt(%EBX[x:6,w:200,y:0-21,h:24],{},"www.cossacks-server.net")
 #font(SYF,SYF,SYF)
-#txt(%BOTTOM[x:273,w:400,y:8,h:24],{},"Registration on")
+#txt(%BOTTOM[x:271,w:400,y:0,h:24],{},"Registration on")
 #font(SWF,SWF,SWF)
-#apan(%BOTTOM[x:356,y:7,w:95,h:17],{GW|url&http://goodgame.ru/cup/<? gg_cup.id | cmd ?>/&from=enter},15)
-#txt(%BOTTOM[x:359,w:400,y:8,h:24],{},"Cossacks GG Cup")
+#apan(%BOTTOM[x:354,y:1,w:95,h:13],{GW|url&http://goodgame.ru/cup/<? gg_cup.id | cmd ?>/&from=enter},15)
+#txt(%BOTTOM[x:357,w:400,y:0,h:24],{},"Cossacks GG Cup")
+#font(SYF,SYF,SYF)
+
+#apan(%BOTTOM[x:359,y:15,w:87,h:13],{GW|url&http://goodgame.ru/cup/<? gg_cup.id | cmd ?>/&from=enter},15)
+#txt(%BOTTOM[x:270,w:401,y:14,h:24],{},"Регистрация на")
+#font(SWF,SWF,SWF)
+#txt(%BOTTOM[x:361,w:401,y:14,h:24],{},"Казаки GG Cup")
 <?~ IF !gg_cup.wo_info ?>
 #font(SYF,SYF,SYF)
-#apan(%BOTTOM[x:<? 502 + 7 * gg_cup.players_count.length ?>,y:7,w:<? 31 + 7 * POSIX.floor(gg_cup.prize_fund).length ?>,h:17],{GW|go&gg_cup_thanks_dgl},15)
-#txt(%BOTTOM[x:446,w:400,y:8,h:24],{},", ")
-#txt(%BOTTOM[x:454,w:400,y:8,h:24],{},<? gg_cup.players_count | arg ?>)
-#txt(%BOTTOM[x:<? 459 + 7 * gg_cup.players_count.length ?>,w:400,y:8,h:24],{},"players")
+#apan(%BOTTOM[x:<? 500 + 7 * gg_cup.players_count.length ?>,y:1,w:<? 31 + 7 * POSIX.floor(gg_cup.prize_fund).length ?>,h:13],{GW|go&gg_cup_thanks_dgl},15)
+#txt(%BOTTOM[x:444,w:400,y:0,h:24],{},", ")
+#txt(%BOTTOM[x:452,w:400,y:0,h:24],{},<? gg_cup.players_count | arg ?>)
+#txt(%BOTTOM[x:<? 457 + 7 * gg_cup.players_count.length ?>,w:400,y:0,h:24],{},"players,")
 #font(SWF,SWF,SWF)
-#txt(%BOTTOM[x:<? 504 + 7 * gg_cup.players_count.length ?>,w:400,y:8,h:24],{},<? POSIX.floor(gg_cup.prize_fund) | arg ?>)
-#txt(%BOTTOM[x:<? 509 + 7 * gg_cup.players_count.length + 7 * POSIX.floor(gg_cup.prize_fund).length ?>,w:400,y:8,h:24],{},"RUB")
+#txt(%BOTTOM[x:<? 502 + 7 * gg_cup.players_count.length ?>,w:400,y:0,h:24],{},<? POSIX.floor(gg_cup.prize_fund) | arg ?>)
+#txt(%BOTTOM[x:<? 507 + 7 * gg_cup.players_count.length + 7 * POSIX.floor(gg_cup.prize_fund).length ?>,w:400,y:0,h:24],{},"RUB")
 #font(SYF,SYF,SYF)
-#txt(%BOTTOM[x:<? 536 + 7 * gg_cup.players_count.length + 7 * POSIX.floor(gg_cup.prize_fund).length ?>,w:400,y:8,h:24],{},"prize fund")
+#txt(%BOTTOM[x:<? 534 + 7 * gg_cup.players_count.length + 7 * POSIX.floor(gg_cup.prize_fund).length ?>,w:400,y:0,h:24],{},"prize fund")
+
+#font(SYF,SYF,SYF)
+#apan(%BOTTOM[x:<? 596 + 7 * gg_cup.players_count.length ?>,y:15,w:<? 10 + 7 * POSIX.floor(gg_cup.prize_fund).length ?>,h:13],{GW|go&gg_cup_thanks_dgl},15)
+#txt(%BOTTOM[x:441,w:401,y:14,h:24],{},", игроков:")
+#txt(%BOTTOM[x:500,w:401,y:14,h:24],{},<? gg_cup.players_count | arg ?>)
+#txt(%BOTTOM[x:<? 500 + 7 * gg_cup.players_count.length ?>,w:401,y:14,h:24],{},", призовой фонд:")
+#font(SWF,SWF,SWF)
+#txt(%BOTTOM[x:<? 597 + 7 * gg_cup.players_count.length ?>,w:401,y:14,h:24],{},<? POSIX.floor(gg_cup.prize_fund) _ 'р' | arg ?>)
 <?~ END ?>
 <?~ END ?>
 
