@@ -191,9 +191,6 @@ sub stats : Command {
     $stat->{"change_$res"} = $player->{stat_history}{"sum_$res"} / ($stat->{time} - ($player->{stat_history}{"change_$res"}[0][1] - $player->{stat_history}{"change_$res"}[0][2])) * $coefs->{$res};
   }
   my $casuality_change = ($stat->{population2} - $old_stat->{population2}) - ($stat->{population} - $old_stat->{population});
-  if($casuality_change < 0) {
-    $h->log->info($h->connection->log_message . " " . $h->req->ver . " #cheat casuality-delta=$casuality_change");
-  }
   $stat->{casuality} = $old_stat->{casuality} + $casuality_change;
   $player->{time} = $stat->{time};
   $player->{stat} = $stat;
