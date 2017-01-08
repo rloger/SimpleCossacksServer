@@ -13,14 +13,15 @@
 #btn(%BOTTOM[x:5,y:4,w:80,h:28],{GW|open&join_game.dcml&ASTATE=<%ASTATE>^VE_RID=<%RL_ID>},"Join")
 #btn(%BOTTOM[x:95,y:4,w:80,h:28],{GW|open&room_info_dgl.dcml&VE_RID=<%RL_ID>},"Info")
 #btn(%BOTTOM[x:185,y:4,w:80,h:28],{GW|open&new_room_dgl.dcml&ASTATE=<%ASTATE>|LW_lockall},"New")
-<?~ IF !gg_cup || gg_cup.started ?>
-#btn(%BOTTOM[x:643,y:4,w:106,h:28],{GW|open&tournaments.dcml&option=total|LW_lockall},"Tournaments")
-<?~ ELSE ?>
-#btn(%BOTTOM[x:660,y:4,w:89,h:28],{GW|open&tournaments.dcml&option=total|LW_lockall},"Tournaments")
-<?~ END ?>
+//<?~ IF !gg_cup || gg_cup.started ?>
+//#btn(%BOTTOM[x:643,y:4,w:106,h:28],{GW|open&tournaments.dcml&option=total|LW_lockall},"Tournaments")
+//<?~ ELSE ?>
+//#btn(%BOTTOM[x:660,y:4,w:89,h:28],{GW|open&tournaments.dcml&option=total|LW_lockall},"Tournaments")
+//<?~ END ?>
 <?~ IF !gg_cup || gg_cup.started ?>
 #font(YF,YF,YF)
-#rtxt(%BOTTOM[x1:100%-124,x:300,y:7,h:24],{},"www.cossacks-server.net")
+//#rtxt(%BOTTOM[x1:100%-124,x:300,y:7,h:24],{},"www.cossacks-server.net")
+#rtxt(%BOTTOM[x1:100%-14,x:300,y:7,h:24],{},"www.cossacks-server.net")
 <?~ ELSE ?>
 #ebox[%EBX](x:0,y:0,w:100%,h:100%)
 #font(SWF,SWF,SWF)

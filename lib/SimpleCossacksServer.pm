@@ -312,7 +312,7 @@ sub export_rooms {
 
 sub load_lcn_ranking {
   my($self) = @_;
-  my $ranking_file = $self->config->{lcn_ranking};
+  my $ranking_file = $self->config->{lcn_ranking} or return;
   my $mtime = (stat $ranking_file)[9] // 0;
   if(!$self->data->{lcn_ranking_mtime} || $self->data->{lcn_ranking_mtime} != $mtime) {
     my $cv = AE::cv;

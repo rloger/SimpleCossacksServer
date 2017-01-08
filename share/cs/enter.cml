@@ -44,11 +44,11 @@
   
   <? IF !type ?>
   #font(SYF,SYF,SWF)
-  #txt(%BOX[x:100%-135,w:80,y:100%-23+2,h:24],{},"logon with:")
-  #apan(%BOX[x:100%-73,w:29,y:100%-23,h:18],{GW|open&enter.dcml&TYPE=LCN},1)
-  #txt(%BOX[x:100%-69,w:30,y:100%-23+2,h:24],{},"LCN")
-  #apan(%BOX[x:100%-40,w:29,y:100%-23,h:18],{GW|open&enter.dcml&TYPE=WCL},1)
-  #txt(%BOX[x:100%-37,w:30,y:100%-23+2,h:24],{},"WCL")
+  //#txt(%BOX[x:100%-135,w:80,y:100%-23+2,h:24],{},"logon with:")
+  //#apan(%BOX[x:100%-73,w:29,y:100%-23,h:18],{GW|open&enter.dcml&TYPE=LCN},1)
+  //#txt(%BOX[x:100%-69,w:30,y:100%-23+2,h:24],{},"LCN")
+  //#apan(%BOX[x:100%-40,w:29,y:100%-23,h:18],{GW|open&enter.dcml&TYPE=WCL},1)
+  //#txt(%BOX[x:100%-37,w:30,y:100%-23+2,h:24],{},"WCL")
   <? ELSE ?>
   #font(SYF,SYF,SWF)
   #apan(%BOX[x:5,w:108,y:100%-23,h:18],{GW|open&enter.dcml},1)
