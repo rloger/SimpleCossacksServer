@@ -4,6 +4,7 @@ BEGIN { extends 'GSC::Server::CommandController' }
 use SimpleCossacksServer::CommandController::Open;
 use String::Escape();
 use JSON();
+use feature 'state';
 
 sub login : Command {
   my($self, $h, $lgdta) = @_;
@@ -82,8 +83,89 @@ sub alive : Command {
 }
 
 sub stats : Command {
-  my($self, $h) = @_;
+  my($self, $h, $rawstat, $room_id) = @_;
+  state $intervals = {
+    wood        => 60 * 25,
+    stone       => 60 * 25,
+    food        => 120 * 25,
+    peasants    => 600, # 16 ticks
+    units       => 1000, # 80 ticks
+    population2 => 1000,
+  };
+  state $coefs = {
+    wood        => 25 / 2,
+    stone       => 25 / 2,
+    food        => 25 / 2,
+    peasants    => 200,
+    units       => 50,
+    population2 => 50,
+  };
   $self->alive($h);
+  $room_id =~ s/\0//;
+  my $room = $h->server->data->{rooms_by_id}{$room_id} or return;
+  my $user_id = $h->connection->data->{id};
+  my $player = $room->{players}{$user_id} or return;
+  my $stat = {};
+  @$stat{qw<time pc player_id status scores population wood gold stone food iron coal peasants units>}
+    = unpack "LCLC SSLLLLLLSS", $rawstat;
+  return unless $user_id == $stat->{player_id};
+  $room->{time} = $stat->{time} if !$room->{time} || $room->{time} < $stat->{time};
+  $player->{time} ||= 0;
+  $player->{stat_cycle} ||= { peasants => 0, units => 0, scores => 0 };
+  if($player->{time} > $stat->{time}) {
+    $h->log->error("player.time > stat.time");
+    return;
+  }
+  my $interval = $stat->{time} - $player->{time};
+  my $old_stat = $player->{stat} || { %$stat, time => 0, population2 => $stat->{units} + $stat->{peasants}, casuality => 0 };
+  if(!$player->{stat} && $stat->{scores} == 0 && $stat->{population} == 0) {
+    my $theam = $player->{theam};
+    my $parent;
+    for my $pl (@{$room->{started_players}}) {
+      if($pl->{theam} == $theam) {
+        $parent = $pl if $player->{id} != $pl->{id};
+        last;
+      }
+    }
+    if($parent) {
+      $player->{zombie} = 1;
+      $player->{color} = $parent->{color};
+    }
+  }
+  for my $res (qw<peasants units>) {
+    $player->{stat_cycle}{$res}++ if $stat->{$res} < ($old_stat->{$res} - $player->{stat_cycle}{$res} * 0x10000);
+    $stat->{$res} += $player->{stat_cycle}{$res} * 0x10000;
+  }
+  my $scores_change = $stat->{scores} - $old_stat->{scores};
+  if(abs($scores_change) > 0x7FFF) {
+    if($scores_change > 0) {
+      $player->{stat_cycle}{scores}--;
+    } else {
+      $player->{stat_cycle}{scores}++;
+    }
+  }
+  $stat->{real_scores} = $player->{stat_cycle}{scores} * 0x10000 + $stat->{scores};
+  $stat->{population2} = $stat->{units} + $stat->{peasants};
+  for(qw<gold iron coal>) {
+    $stat->{"change_$_"} = ($stat->{$_} - $old_stat->{$_}) / $interval * 25 / 2;
+  }
+  for my $res (qw<wood food stone peasants units population2>) {
+    my $change = $stat->{$res} - $old_stat->{$res};
+    push @{$player->{stat_history}{"change_$res"}}, [$change, $stat->{time}, $interval];
+    $player->{stat_history}{"sum_$res"} += $change;
+    while(@{$player->{stat_history}{"change_$res"}} && $player->{stat_history}{"change_$res"}[0][1] < $stat->{time} - $intervals->{$res}) {
+      my $r = shift @{$player->{stat_history}{"change_$res"}};
+      $player->{stat_history}{"sum_$res"} -= $r->[0];
+    }
+    $stat->{"change_$res"} = $player->{stat_history}{"sum_$res"} / ($stat->{time} - ($player->{stat_history}{"change_$res"}[0][1] - $player->{stat_history}{"change_$res"}[0][2])) * $coefs->{$res};
+  }
+  my $casuality_change = ($stat->{population2} - $old_stat->{population2}) - ($stat->{population} - $old_stat->{population});
+  if($casuality_change < 0) {
+    $h->log->info($h->connection->log_message . " " . $h->req->ver . " #cheat casuality-delta=$casuality_change");
+  }
+  $stat->{casuality} = $old_stat->{casuality} + $casuality_change;
+  $player->{time} = $stat->{time};
+  $player->{stat} = $stat;
 }
 
 sub leave : Command {
@@ -129,6 +211,22 @@ sub start : Command {
       $h->server->data->{alive_timers}{ $player_id } = AnyEvent->timer( after => 150, cb => sub {
         $self->not_alive($h, $player_id);
       } );
+    }
+    if($h->connection->data->{id} == $room->{host_id}) { # save player data
+      s/\0// for $map, $players_count, @players_list;
+      $room->{map} = $map;
+      if($players_count > 7) {
+        $h->log->error("bad players count $players_count");
+      }
+      for(my $i = 0; $i < $players_count; $i++) {
+        my($player_id, $nation, $theam, $color) = splice(@players_list, 0, 4);
+        $h->log->warn("no player with id $player_id") unless $room->{players}{$player_id};
+        my $player = $room->{players}{$player_id} || {};
+        $player->{nation} = $nation;
+        $player->{theam} = $theam;
+        $player->{color} = $color;
+        push @{$room->{started_players}}, $player; 
+      }
     }
   }
   if($h->connection->data->{account}) { # отправка статы в wcl/lcn аккаунт

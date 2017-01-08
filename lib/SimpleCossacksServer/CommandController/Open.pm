@@ -4,11 +4,12 @@ use Coro::LWP;
 use LWP;
 use JSON;
 use String::Escape();
+use feature 'state';
 
 my @PUBLIC = qw[
   enter try_enter startup resize games rooms_table_dgl new_room_dgl reg_new_room
   join_game join_pl_cmd user_details users_list direct direct_ping 
-  direct_join room_info_dgl
+  direct_join room_info_dgl started_room_message test
 ];
 
 
@@ -244,7 +245,7 @@ sub room_info_dgl {
     return;
   }
   my $room = $h->server->data->{rooms_by_id}{ $p->{VE_RID} };
-  unless($room->{id}) {
+  unless($room) {
     $self->_error($h, "The room is closed");
     return;
   }
@@ -252,7 +253,42 @@ sub room_info_dgl {
   if($p->{BACKTO} && $p->{BACKTO} eq 'user_details') {
     $backto = 'open&user_details.dcml&ID=' . $h->connection->data->{id}; 
   }
-  $h->show('room_info_dgl.cml', { room => $room, room_time => $self->_time_interval($room->{started} || $room->{ctime}), backto => $backto });
+  if($room->{started} && ($h->connection->data->{dev} || $h->server->config->{show_started_room_info})) {
+    state $nations = [qw<
+      Bavaria
+      Denmark
+      Austria
+      England
+      France
+      Netherlands
+      Piemonte
+      Portugal
+      Prussia
+      Russia
+      Poland
+      Saxony
+      Spain
+      Sweden
+      Ukraine
+      Venice
+      Algeria
+      Turkey
+      Vengria
+      Switzerland
+      (Random)
+    >];
+    my $tpl = $p->{part} && $p->{part} eq 'statcols' ? 'started_room_info/statcols.cml' : 'started_room_info.cml';
+    $h->show($tpl, {
+      room => $room,
+      room_time => $self->_time_interval($room->{started} || $room->{ctime}),
+      backto => $backto,
+      page => ($p->{page} || 1),
+      res => ($p->{res} && $p->{res} =~ /^\d+$/ ? $p->{res} : 0),
+      nations => $nations,
+    });
+  } else {
+    $h->show('room_info_dgl.cml', { room => $room, room_time => $self->_time_interval($room->{started} || $room->{ctime}), backto => $backto });
+  }
 }
 
 sub _time_interval {
