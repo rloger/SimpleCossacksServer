@@ -12,9 +12,10 @@ WriteMakefile(
         'String::Escape' => 0,
         'Getopt::Compact' => 0,
         'Net::EmptyPort' => 0, # for tests
+        'Getopt::Long::Descriptive' => 0.097,
     },
     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
       (ABSTRACT_FROM  => 'lib/SimpleCossacksServer.pm', # retrieve abstract from module
        AUTHOR         => '[-RUS-]_AlliGator') : ()),
-    EXE_FILES         => ['script/simple-cossacks-server'],
+    EXE_FILES         => ['script/simple-cossacks-server', 'script/cossacks-proxy'],
 );

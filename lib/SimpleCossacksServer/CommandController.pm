@@ -4,7 +4,38 @@ BEGIN { extends 'GSC::Server::CommandController' }
 use SimpleCossacksServer::CommandController::Open;
 use String::Escape();
 use JSON();
+use Time::HiRes();
 use feature 'state';
+
+sub proxy : Command {
+  my($self, $h, $ip, $port, $key) = @_;
+  my $valid_key = $h->server->config->{proxy_key};
+  if(!$valid_key) {
+    $h->log->error("reject connection from from proxy " . $h->connection->ip . ": proxy connection disabled");
+    $h->log->info($h->connection->log_message . " #reject connection from from proxy: proxy connection disabled");
+    $h->close(); return;
+  }
+  if($key ne $valid_key) {
+    $h->log->error("reject connection from from proxy " . $h->connection->ip . ": invalid key $key");
+    $h->log->info($h->connection->log_message . " #reject connection from from proxy: invalid key $key");
+    $h->close(); return;
+  }
+  if(!$ip || $ip !~ /^\d+\.\d+\.\d+\.\d+$/) {
+    $h->log->error("reject connection from from proxy " . $h->connection->ip . ": pass invalid ip $ip");
+    $h->log->info($h->connection->log_message . " #reject connection from from proxy: pass invalid ip $ip");
+    $h->close(); return;
+  }
+  if(!$port || $port !~ /^\d+$/ || !($port > 0 && $port < 0xFFFF)) {
+    $h->log->error("reject connection from from proxy " . $h->connection->ip . ": pass invalid port $port");
+    $h->log->info($h->connection->log_message . " #reject connection from from proxy: pass invalid port $port");
+    $h->close(); return;
+  }
+  my $proxy_ip = $h->connection->ip;
+  $h->connection->ip($ip);
+  $h->connection->int_ip(unpack 'L', Socket::inet_aton $ip);
+  $h->connection->port($port);
+  $h->log->info($h->connection->log_message . " #connect from proxy $proxy_ip");
+}
 
 sub login : Command {
   my($self, $h, $lgdta) = @_;
