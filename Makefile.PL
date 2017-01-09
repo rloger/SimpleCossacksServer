@@ -22,6 +22,6 @@ WriteMakefile(
     },
     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
       (ABSTRACT_FROM  => 'lib/SimpleCossacksServer.pm', # retrieve abstract from module
-       AUTHOR         => '[-RUS-]_AlliGator') : ()),
+       AUTHOR         => '[-RUS-]AlliGator') : ()),
     EXE_FILES         => ['script/simple-cossacks-server', 'script/cossacks-proxy'],
 );
